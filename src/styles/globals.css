@@ -14,3 +14,7 @@ a {
 * {
   box-sizing: border-box;
 }
+
+* {
+  transition: color 100ms ease-in-out, background-color 100ms ease-in-out;
+}
