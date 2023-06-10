@@ -1,0 +1,26 @@
+.movieSlide {
+  position: relative;
+  height: 400px;
+  background-position: center;
+  background-size: cover;
+}
+
+.movieSlide::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, .5);
+}
+
+.movieSlideTitle {
+  text-shadow: rgba(0, 0, 0, 0.9) 0px 3px 3px;
+}
+
+.movieSliceButtons {
+  position: absolute;
+  bottom: 36px;
+  left: 2.75rem;
+}

@@ -1,15 +1,21 @@
-import { SignInButton, SignOutButton, useUser } from "@clerk/nextjs";
+import {
+  ClerkLoading,
+  SignInButton,
+  SignOutButton,
+  useUser,
+} from "@clerk/nextjs";
 import {
   ActionIcon,
   Avatar,
   Box,
   Button,
-  ColorScheme,
   Divider,
   Flex,
   Text,
   Title,
   Tooltip,
+  type ColorScheme,
+  Loader,
 } from "@mantine/core";
 import { IconMoonFilled, IconSunFilled } from "@tabler/icons-react";
 import { useRouter } from "next/router";
@@ -26,7 +32,19 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
     <>
       <Box py={".5rem"} px={"1rem"}>
         <Flex justify={"space-between"} align={"center"}>
-          <Title color="blue">theater.io</Title>
+          <Title
+            color="blue"
+            onClick={() => router.replace("/")}
+            sx={{
+              cursor: "pointer",
+              transition: "transform 200ms ease-in-out",
+              ":hover": {
+                transform: "translateX(.5rem)",
+              },
+            }}
+          >
+            theater.io
+          </Title>
           <Flex align={"center"} gap={"md"}>
             <Flex align={"center"}>
               <Button
@@ -67,6 +85,9 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
               </Button>
             </Flex>
             <Flex align={"center"} gap={"md"}>
+              <ClerkLoading>
+                <Loader />
+              </ClerkLoading>
               {!user.isSignedIn && (
                 <SignInButton>
                   <Button size="md">Sign In</Button>

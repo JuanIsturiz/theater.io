@@ -1,6 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { ColorScheme, Container, MantineProvider } from "@mantine/core";
 import { FC, ReactNode, useState } from "react";
+import Footer from "~/componens/Footer";
 import Header from "~/componens/Header";
 
 interface LayoutProps {
@@ -24,7 +25,8 @@ const Layout: FC<LayoutProps> = ({ children }) => {
       >
         <ClerkProvider>
           <Header theme={theme} onTheme={handleTheme} />
-          <Container>{children}</Container>
+          <Container size={"xl"}>{children}</Container>
+          <Footer theme={theme} />
         </ClerkProvider>
       </MantineProvider>
     </>
