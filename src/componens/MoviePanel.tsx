@@ -30,6 +30,7 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
       >
         <Image
           src={tmdbImagePath + movie.poster_path}
+          mih={"400px"}
           sx={{
             transition: "all 300ms ease-in-out",
             opacity: boxHover || flexHover ? 0.5 : 1,

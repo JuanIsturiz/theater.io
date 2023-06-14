@@ -3,6 +3,7 @@ import { ColorScheme, Container, MantineProvider } from "@mantine/core";
 import { FC, ReactNode, useState } from "react";
 import Footer from "~/componens/Footer";
 import Header from "~/componens/Header";
+import ScrollButton from "~/componens/ScrollButton";
 
 interface LayoutProps {
   children: ReactNode;
@@ -27,6 +28,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
           <Header theme={theme} onTheme={handleTheme} />
           <Container size={"xl"}>{children}</Container>
           <Footer theme={theme} />
+          <ScrollButton />
         </ClerkProvider>
       </MantineProvider>
     </>
