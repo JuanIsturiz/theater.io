@@ -1,5 +1,9 @@
 import { Box, Divider, Group, Text, Title, rem } from "@mantine/core";
+import { useLoadScript, GoogleMap, MarkerF } from "@react-google-maps/api";
 import { NextPage } from "next";
+import { useMemo } from "react";
+import { env } from "~/env.mjs";
+import styles from "~/styles/info.module.css";
 
 const Info: NextPage = () => {
   return (
@@ -146,8 +150,32 @@ const Info: NextPage = () => {
         <Title order={2} weight={"normal"} mb={rem(10)}>
           Location
         </Title>
+        <Map />
       </Box>
     </main>
+  );
+};
+
+const Map: React.FC = () => {
+  const { isLoaded } = useLoadScript({
+    id: "google-map-script",
+    googleMapsApiKey: env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+  });
+
+  const center = useMemo(() => ({ lat: 44, lng: -80 }), []);
+
+  return (
+    <Box>
+      {isLoaded && (
+        <GoogleMap
+          zoom={10}
+          center={center}
+          mapContainerClassName={styles["google-map"]}
+        >
+          <MarkerF position={center} />
+        </GoogleMap>
+      )}
+    </Box>
   );
 };
 

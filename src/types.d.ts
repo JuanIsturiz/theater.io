@@ -1,3 +1,12 @@
+export interface IGenresJson {
+  genres: IGenre[];
+}
+
+export interface IGenre {
+  id: number;
+  name: string;
+}
+
 export interface IMoviesJson {
   page: number;
   results: Result[];
