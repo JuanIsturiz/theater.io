@@ -1,7 +1,10 @@
 import {
+  ActionIcon,
   Box,
   Button,
   Container,
+  Flex,
+  List,
   SegmentedControl,
   Select,
   SimpleGrid,
@@ -13,98 +16,18 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import type { NextPage } from "next";
 import { env } from "~/env.mjs";
-import type { IGenresJson } from "~/types";
+import type { IDiscoverJson, IGenresJson, ISearchJson } from "~/types";
 import { useState } from "react";
-import { IconSearch } from "@tabler/icons-react";
+import { IconSearch, IconX } from "@tabler/icons-react";
+import MovieList from "~/componens/MovieList";
 
-// search "https://api.themoviedb.org/3/search/movie?query=hola&include_adult=false&language=en-US&page=1";
-
-// discover https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc&with_genres=someshit'
-
-// everyfilter in discover (genre, release_date, etc) besides searchbar (query)
-
-const LANG_OPTIONS = [
-  "af-ZA",
-  "ar-AE",
-  "ar-SA",
-  "be-BY",
-  "bg-BG",
-  "bn-BD",
-  "ca-ES",
-  "ch-GU",
-  "cn-CN",
-  "cs-CZ",
-  "cy-GB",
-  "da-DK",
-  "de-AT",
-  "de-CH",
-  "de-DE",
-  "el-GR",
-  "en-AU",
-  "en-CA",
-  "en-GB",
-  "en-IE",
-  "en-NZ",
-  "en-US",
-  "eo-EO",
-  "es-ES",
-  "es-MX",
-  "et-EE",
-  "eu-ES",
-  "fa-IR",
-  "fi-FI",
-  "fr-CA",
-  "fr-FR",
-  "ga-IE",
-  "gd-GB",
-  "gl-ES",
-  "he-IL",
-  "hi-IN",
-  "hr-HR",
-  "hu-HU",
-  "id-ID",
-  "it-IT",
-  "ja-JP",
-  "ka-GE",
-  "kk-KZ",
-  "kn-IN",
-  "ko-KR",
-  "ky-KG",
-  "lt-LT",
-  "lv-LV",
-  "ml-IN",
-  "mr-IN",
-  "ms-MY",
-  "ms-SG",
-  "nb-NO",
-  "nl-BE",
-  "nl-NL",
-  "no-NO",
-  "pa-IN",
-  "pl-PL",
-  "pt-BR",
-  "pt-PT",
-  "ro-RO",
-  "ru-RU",
-  "si-LK",
-  "sk-SK",
-  "sl-SI",
-  "sq-AL",
-  "sr-RS",
-  "sv-SE",
-  "ta-IN",
-  "te-IN",
-  "th-TH",
-  "tl-PH",
-  "tr-TR",
-  "uk-UA",
-  "vi-VN",
-  "zh-CN",
-  "zh-HK",
-  "zh-SG",
-  "zh-TW",
-  "zu-ZA",
-];
+interface IQuery {
+  page: number;
+  with_genres: number | null;
+  sort_by: string;
+  vote_average: string | null;
+  order_by: string | null;
+}
 
 const ORDER_OPTIONS = [
   { value: "popularity", label: "Popularity" },
@@ -134,14 +57,40 @@ const fetchGenres = async () => {
   return json.genres;
 };
 
-// https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc'
+const fetchDiscoverMovies = async (query: IQuery) => {
+  let queries = `${env.NEXT_PUBLIC_TMDB_BASE_URL}/discover/movie?include_adult=false&include_video=false&language=en-US&`;
 
-const discoverMovies = async (query: string) => {
+  Object.keys(query).forEach((key) => {
+    if (key === "vote_average") {
+      queries += `${key}.gte=${query[key as keyof IQuery] ?? 0}`;
+      queries += "&";
+      return;
+    }
+    if (key === "order_by") return;
+    if (key === "sort_by") {
+      if (!query["order_by"]) {
+        queries += `${key}=popularity.desc`;
+      } else {
+        queries += `${key}=${query.order_by}.${query.sort_by}`;
+      }
+      queries += "&";
+      return;
+    }
+    queries += `${key}=${query[key as keyof IQuery]}`;
+    queries += "&";
+  });
+  queries += "api_key=" + env.NEXT_PUBLIC_TMDB_API_KEY;
+  const res = await fetch(queries);
+  const json: IDiscoverJson = await res.json();
+  return json.results;
+};
+
+const fetchSearchMovies = async (info: { query: string; page: number }) => {
   const res = await fetch(
-    `${env.NEXT_PUBLIC_TMDB_BASE_URL}/discover/movie?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
+    `${env.NEXT_PUBLIC_TMDB_BASE_URL}/search/movie?include_adult=false&language=en-US&page=${info.page}&query=${info.query}&api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
-  const json: IGenresJson = await res.json();
-  return json.genres;
+  const json: ISearchJson = await res.json();
+  return json.results;
 };
 
 const Movies: NextPage = () => {
@@ -151,12 +100,58 @@ const Movies: NextPage = () => {
   });
 
   // search
+  const [page, setPage] = useState<number>(1);
   const [search, setSearch] = useState<string>("");
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [selectedOrderBy, setSelectedOrderBy] = useState<string | null>(null);
   const [selectedVoteAvg, setSelectedVoteAvg] = useState<string | null>(null);
-  const [sort, setSort] = useState("asc");
-  const [selectedLanguage, setSelectedLanguage] = useState<string | null>(null);
+  const [sort, setSort] = useState("desc");
+  const [movieList, setMovieList] = useState<"discover" | "search">("discover");
+
+  const {
+    data: discoverMovies,
+    isLoading: loadingDiscover,
+    refetch: refetchDiscover,
+  } = useQuery({
+    queryKey: ["discover-movies"],
+    queryFn: () =>
+      fetchDiscoverMovies({
+        page,
+        with_genres: genres?.find((g) => g.name === selectedGenre)?.id || null,
+        order_by: selectedOrderBy,
+        vote_average: selectedVoteAvg,
+        sort_by: sort,
+      }),
+  });
+
+  const {
+    data: searchMovies,
+    isLoading: loadingSearch,
+    refetch: refetchSearch,
+  } = useQuery({
+    queryKey: ["search-movies"],
+    queryFn: () =>
+      fetchSearchMovies({
+        query: search,
+        page: page,
+      }),
+    enabled: false,
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPage(1);
+    if (search) {
+      refetchSearch();
+      setMovieList("search");
+    } else {
+      refetchDiscover();
+      setMovieList("discover");
+    }
+  };
+
+  const movies = movieList === "discover" ? discoverMovies : searchMovies;
+  if (!movies) return null;
 
   return (
     <main>
@@ -167,19 +162,39 @@ const Movies: NextPage = () => {
         Browse and discover more movies!
       </Text>
       <Container size={"lg"}>
-        <TextInput
-          mb={rem(10)}
-          label="Search Term"
-          icon={<IconSearch size="0.8rem" />}
-          value={search}
-          onChange={(event) => setSearch(event.currentTarget.value)}
-        />
+        <form onSubmit={handleSubmit}>
+          <Flex justify={"stretch"} align={"center"} gap={"md"}>
+            <TextInput
+              sx={{ flexGrow: 1 }}
+              mb={rem(10)}
+              label="Search Term"
+              icon={<IconSearch size={rem(20)} />}
+              value={search}
+              onChange={(event) => setSearch(event.currentTarget.value)}
+              rightSection={
+                search && (
+                  <ActionIcon>
+                    <IconX
+                      cursor={"pointer"}
+                      size={rem(20)}
+                      onClick={() => setSearch("")}
+                    />
+                  </ActionIcon>
+                )
+              }
+            />
+            <Button mt={rem(15)} px={rem(30)} type="submit">
+              Search
+            </Button>
+          </Flex>
+        </form>
         <SimpleGrid
-          cols={5}
+          mb={"xl"}
+          cols={4}
           breakpoints={[
-            { maxWidth: "md", cols: 4, spacing: "md" },
-            { maxWidth: "sm", cols: 3, spacing: "sm" },
-            { maxWidth: "xs", cols: 2, spacing: "sm" },
+            { maxWidth: "md", cols: 3, spacing: "md" },
+            { maxWidth: "sm", cols: 2, spacing: "sm" },
+            { maxWidth: "xs", cols: 1, spacing: "sm" },
           ]}
         >
           <Box>
@@ -222,21 +237,6 @@ const Movies: NextPage = () => {
               }))}
             />
           </Box>
-          <Box>
-            <Select
-              searchable
-              nothingFound="No options"
-              clearable
-              label="Language"
-              placeholder="Pick one"
-              value={selectedLanguage}
-              onChange={setSelectedLanguage}
-              data={LANG_OPTIONS.map((l) => ({
-                value: l,
-                label: l,
-              }))}
-            />
-          </Box>
           <Box mt={rem(2)}>
             <Text size={"sm"} weight={500}>
               Sort By
@@ -246,27 +246,13 @@ const Movies: NextPage = () => {
               onChange={setSort}
               data={[
                 { label: "Ascending", value: "asc" },
-                { label: "Descending", value: "dsc" },
+                { label: "Descending", value: "desc" },
               ]}
             />
           </Box>
         </SimpleGrid>
+        <MovieList movies={movies} />
       </Container>
-
-      <Button
-        onClick={() => {
-          console.log({
-            genre: genres?.find((g) => g.name === selectedGenre)?.id,
-            search,
-            selectedGenre,
-            selectedOrderBy,
-            selectedVoteAvg,
-            sort,
-          });
-        }}
-      >
-        si
-      </Button>
     </main>
   );
 };

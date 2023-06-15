@@ -1,13 +1,13 @@
-import { Box, Button, Flex, Image, Text, Transition } from "@mantine/core";
-import { Result } from "~/types";
+import { Box, Button, Flex, Image, Text, Transition, rem } from "@mantine/core";
+import { IDiscoverResult, ISearchResult, Result } from "~/types";
 import { useHover } from "@mantine/hooks";
-import { IconStarFilled } from "@tabler/icons-react";
+import { IconPhotoOff, IconStarFilled } from "@tabler/icons-react";
 
 interface MoviePanelProps {
-  movie: Result;
+  movie: Result | IDiscoverResult | ISearchResult;
 }
 
-const formatDate = (date: Date | undefined) =>
+const formatDate = (date: string | Date | undefined) =>
   date ? date.toString().substring(0, 4) : "Unknown";
 
 const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
@@ -16,11 +16,20 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
   const { hovered: flexHover, ref: flexRef } = useHover();
 
   return (
-    <Box pos={"relative"}>
+    <Box pos={"relative"} display={"flex"} sx={{ flexDirection: "column" }}>
       <Box
+        display={"flex"}
         ref={boxRef}
         mb={".25rem"}
         sx={(theme) => ({
+          backgroundColor:
+            theme.colorScheme === "dark"
+              ? theme.colors.dark
+              : theme.colors.blue[9],
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          flexGrow: 1,
           border: "solid 4px #AAA",
           borderColor: boxHover || flexHover ? theme.colors.blue : "#AAA",
           borderRadius: "5px",
@@ -28,13 +37,25 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
           cursor: "pointer",
         })}
       >
-        <Image
-          src={tmdbImagePath + movie.poster_path}
-          sx={{
-            transition: "all 300ms ease-in-out",
-            opacity: boxHover || flexHover ? 0.5 : 1,
-          }}
-        />
+        {movie.poster_path ? (
+          <Image
+            src={tmdbImagePath + movie.poster_path}
+            sx={{
+              transition: "all 300ms ease-in-out",
+              opacity: boxHover || flexHover ? 0.5 : 1,
+            }}
+            withPlaceholder
+          />
+        ) : (
+          <Box
+            sx={{
+              transition: "all 300ms ease-in-out",
+              opacity: boxHover || flexHover ? 0.5 : 1,
+            }}
+          >
+            <IconPhotoOff size={"3rem"} />
+          </Box>
+        )}
       </Box>
       <Text
         weight={"bold"}
@@ -48,7 +69,7 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
           cursor: "pointer",
         }}
       >
-        {movie?.title || movie?.name}
+        {movie?.title || "Unknown"}
       </Text>
       <Text opacity={0.7} size={"sm"}>
         {formatDate(movie.release_date)}

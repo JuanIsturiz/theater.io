@@ -1,9 +1,9 @@
 import { SimpleGrid } from "@mantine/core";
-import { Result } from "~/types";
+import { IDiscoverResult, ISearchResult, Result } from "~/types";
 import MoviePanel from "./MoviePanel";
 
 interface MovieListProps {
-  movies: Result[] | undefined;
+  movies: Result[] | IDiscoverResult[] | ISearchResult[] | undefined;
 }
 
 const MovieList: React.FC<MovieListProps> = ({ movies }) => {
