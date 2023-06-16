@@ -2,6 +2,7 @@ import { Box, Button, Flex, Image, Text, Transition, rem } from "@mantine/core";
 import { IDiscoverResult, ISearchResult, Result } from "~/types";
 import { useHover } from "@mantine/hooks";
 import { IconPhotoOff, IconStarFilled } from "@tabler/icons-react";
+import { useRouter } from "next/router";
 
 interface MoviePanelProps {
   movie: Result | IDiscoverResult | ISearchResult;
@@ -14,6 +15,11 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
   const tmdbImagePath = "https://image.tmdb.org/t/p/original";
   const { hovered: boxHover, ref: boxRef } = useHover();
   const { hovered: flexHover, ref: flexRef } = useHover();
+  const router = useRouter();
+
+  const handleMovie = () => {
+    router.replace(`/movies/${movie.id}`);
+  };
 
   return (
     <Box pos={"relative"} display={"flex"} sx={{ flexDirection: "column" }}>
@@ -30,12 +36,14 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
           alignItems: "center",
           justifyContent: "center",
           flexGrow: 1,
+          overflow: "hidden",
           border: "solid 4px #AAA",
           borderColor: boxHover || flexHover ? theme.colors.blue : "#AAA",
           borderRadius: "5px",
           transition: "all 300ms ease-in-out",
           cursor: "pointer",
         })}
+        onClick={handleMovie}
       >
         {movie.poster_path ? (
           <Image
@@ -43,6 +51,7 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
             sx={{
               transition: "all 300ms ease-in-out",
               opacity: boxHover || flexHover ? 0.5 : 1,
+              transform: boxHover || flexHover ? "scale(1.1)" : "scale(1)",
             }}
             withPlaceholder
           />
@@ -68,6 +77,7 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
           whiteSpace: "nowrap",
           cursor: "pointer",
         }}
+        onClick={handleMovie}
       >
         {movie?.title || "Unknown"}
       </Text>
@@ -90,6 +100,7 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
           textAlign: "center",
           transform: "translate(-50%, -50%)",
         }}
+        onClick={handleMovie}
       >
         <Box>
           <IconStarFilled style={{ color: "#1971C2" }} size={"3rem"} />
@@ -103,7 +114,11 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
           duration={300}
           timingFunction="ease"
         >
-          {(styles) => <Button style={styles}>View Details</Button>}
+          {(styles) => (
+            <Button style={styles} onClick={handleMovie}>
+              View Details
+            </Button>
+          )}
         </Transition>
       </Flex>
     </Box>

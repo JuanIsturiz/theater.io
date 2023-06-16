@@ -1,4 +1,13 @@
-import { Box, Divider, Group, Text, Title, rem } from "@mantine/core";
+import {
+  Box,
+  Divider,
+  Flex,
+  Group,
+  Stack,
+  Text,
+  Title,
+  rem,
+} from "@mantine/core";
 import { useLoadScript, GoogleMap, MarkerF } from "@react-google-maps/api";
 import { NextPage } from "next";
 import { useMemo } from "react";
@@ -148,9 +157,33 @@ const Info: NextPage = () => {
       </Box>
       <Box mb={rem(30)}>
         <Title order={2} weight={"normal"} mb={rem(10)}>
-          Location
+          Location & Contact Info
         </Title>
-        <Map />
+        <Flex gap={"xl"}>
+          <Map />
+          <Stack spacing={"xl"}>
+            <Box>
+              <Text size={"lg"} weight={500} opacity={0.8}>
+                Street Address
+              </Text>
+              <Text size={rem(24)}>
+                2823 Nottingham Way, Albany, GA 31707, United States
+              </Text>
+            </Box>
+            <Box>
+              <Text size={"lg"} weight={500} opacity={0.8}>
+                Email Address
+              </Text>
+              <Text size={rem(24)}>theater.io@mail.com</Text>
+            </Box>
+            <Box>
+              <Text size={"lg"} weight={500} opacity={0.8}>
+                Phone Number
+              </Text>
+              <Text size={rem(24)}>+1 555-555-5555</Text>
+            </Box>
+          </Stack>
+        </Flex>
       </Box>
     </main>
   );
