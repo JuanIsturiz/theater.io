@@ -1,4 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 import { ColorScheme, Container, MantineProvider } from "@mantine/core";
 import { FC, ReactNode, useState } from "react";
 import Footer from "~/componens/Footer";
@@ -24,7 +25,11 @@ const Layout: FC<LayoutProps> = ({ children }) => {
           colorScheme: theme,
         }}
       >
-        <ClerkProvider>
+        <ClerkProvider
+          appearance={{
+            baseTheme: dark,
+          }}
+        >
           <Header theme={theme} onTheme={handleTheme} />
           <Container size={"xl"}>{children}</Container>
           <Footer theme={theme} />
