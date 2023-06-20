@@ -6,14 +6,20 @@ import { type NextPage } from "next";
 import { useState } from "react";
 import NewTicketWizard from "~/componens/NewTicketWizard";
 import { env } from "~/env.mjs";
-import type { IMoviesJson, Result } from "~/types";
+import type { IMovie } from "~/types";
+import { api } from "~/utils/api";
 
-const fetchMovies = async (limit: number) => {
-  const res = await fetch(
-    `${env.NEXT_PUBLIC_TMDB_BASE_URL}/trending/movie/day?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
+const fetchMovies = async (ids: string[]) => {
+  const movies: IMovie[] = await Promise.all(
+    ids.map(async (movieId) => {
+      const res = await fetch(
+        `${env.NEXT_PUBLIC_TMDB_BASE_URL}/movie/${movieId}?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
+      );
+      const json = await res.json();
+      return json;
+    })
   );
-  const json: IMoviesJson = await res.json();
-  return json.results.slice(0, limit);
+  return movies;
 };
 
 const Reserve: NextPage = () => {
@@ -25,9 +31,12 @@ const Reserve: NextPage = () => {
 
   const disclosure = useDisclosure(false);
 
-  const { data: movies, isLoading } = useQuery<Result[]>({
+  const { data: movieIds } = api.movie.getAll.useQuery();
+
+  const { data: movies, isLoading } = useQuery<IMovie[]>({
     queryKey: ["movies"],
-    queryFn: () => fetchMovies(8),
+    queryFn: () => fetchMovies(movieIds?.map((m) => m.imdbId) ?? [""]),
+    enabled: !!movieIds,
   });
 
   return (
@@ -82,12 +91,12 @@ const Reserve: NextPage = () => {
                     },
                   }}
                   onClick={() => {
-                    setSelectedMovie(m.title || m.name);
+                    setSelectedMovie(m.title);
                     setInitialShowtime("0");
                     disclosure[1].open();
                   }}
                 >
-                  {m.title || m.name}
+                  {m.title}
                 </Title>
                 <Text
                   tt={"uppercase"}
@@ -110,8 +119,20 @@ const Reserve: NextPage = () => {
                     variant="light"
                     size="xs"
                     onClick={() => {
-                      setSelectedMovie(m.title || m.name);
+                      setSelectedMovie(m.title);
                       setInitialShowtime("0");
+                      disclosure[1].open();
+                    }}
+                  >
+                    1:30pm
+                  </Button>
+                  <Button
+                    color="gray"
+                    variant="light"
+                    size="xs"
+                    onClick={() => {
+                      setSelectedMovie(m.title);
+                      setInitialShowtime("1");
                       disclosure[1].open();
                     }}
                   >
@@ -122,8 +143,8 @@ const Reserve: NextPage = () => {
                     variant="light"
                     size="xs"
                     onClick={() => {
-                      setSelectedMovie(m.title || m.name);
-                      setInitialShowtime("1");
+                      setSelectedMovie(m.title);
+                      setInitialShowtime("2");
                       disclosure[1].open();
                     }}
                   >
@@ -134,8 +155,8 @@ const Reserve: NextPage = () => {
                     variant="light"
                     size="xs"
                     onClick={() => {
-                      setSelectedMovie(m.title || m.name);
-                      setInitialShowtime("2");
+                      setSelectedMovie(m.title);
+                      setInitialShowtime("3");
                       disclosure[1].open();
                     }}
                   >

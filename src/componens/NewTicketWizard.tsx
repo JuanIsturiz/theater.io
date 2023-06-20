@@ -158,9 +158,10 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                   description="Only available option will be on display"
                 >
                   <Flex gap={"sm"} mt={"sm"}>
-                    <Radio value={"0"} label="4:00pm" />
-                    <Radio value={"1"} label="6:30pm" />
-                    <Radio value={"2"} label="9:00pm" />
+                    <Radio value={"0"} label="1:30pm" />
+                    <Radio value={"1"} label="4:00pm" />
+                    <Radio value={"2"} label="6:30pm" />
+                    <Radio value={"3"} label="9:00pm" />
                   </Flex>
                 </Radio.Group>
               </Box>

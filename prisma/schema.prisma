@@ -2,17 +2,67 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["jsonProtocol"]
+    provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mongodb"
+    provider = "postgresql"
     url      = env("DATABASE_URL")
 }
 
 model Example {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    id        String   @id @default(cuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model Movie {
+    id      String   @id @default(cuid())
+    imdbId  String   @unique
+    screens Screen[]
+    tickets Ticket[]
+}
+
+model Room {
+    id      String   @id @default(cuid())
+    name    String
+    screens Screen[]
+}
+
+model Screen {
+    id       String   @id @default(cuid())
+    movie    Movie    @relation(fields: [movieId], references: [id])
+    movieId  String
+    room     Room     @relation(fields: [roomId], references: [id])
+    seats    Seat[]
+    roomId   String
+    showtime String
+    date     DateTime
+}
+
+model Seat {
+    id       String   @id @default(cuid())
+    userId   String
+    screen   Screen[]
+    screenId String
+    ticket   Ticket   @relation(fields: [ticketId], references: [id])
+    ticketId String
+}
+
+model Ticket {
+    id        String   @id @default(cuid())
+    userId    String
+    seats     Seat[]
+    createdAt DateTime @default(now())
+    date      DateTime
+    bundle    Bundle
+    showtime  String
+    movie     Movie    @relation(fields: [movieId], references: [id])
+    movieId   String
+}
+
+enum Bundle {
+    BASIC
+    VIP
+    PREMIUM
 }

@@ -9,6 +9,9 @@
     "lint": "next lint",
     "start": "next start"
   },
+  "prisma": {
+    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+  },
   "dependencies": {
     "@clerk/nextjs": "^4.19.1",
     "@clerk/themes": "^1.7.5",
@@ -45,6 +48,7 @@
     "eslint": "^8.40.0",
     "eslint-config-next": "^13.4.2",
     "prisma": "^4.14.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
   },
   "ct3aMetadata": {
