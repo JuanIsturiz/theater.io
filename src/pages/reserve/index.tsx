@@ -7,49 +7,50 @@ import { useState } from "react";
 import NewTicketWizard from "~/componens/NewTicketWizard";
 import { env } from "~/env.mjs";
 import type { IMovie } from "~/types";
-import { api } from "~/utils/api";
+import { RouterOutputs, api } from "~/utils/api";
 
-const fetchMovies = async (ids: string[]) => {
-  const movies: IMovie[] = await Promise.all(
-    ids.map(async (movieId) => {
+type Movie = RouterOutputs["movie"]["getAll"][number];
+type Screen = RouterOutputs["screen"]["getAll"][number];
+
+interface ICompleteMovie extends IMovie {
+  dbId: string;
+  screens: Screen[];
+}
+
+const fetchMovies = async (movies: Movie[] | undefined) => {
+  if (!movies) return null;
+  const imdbMovies: ICompleteMovie[] = await Promise.all(
+    movies.map(async (movie) => {
       const res = await fetch(
-        `${env.NEXT_PUBLIC_TMDB_BASE_URL}/movie/${movieId}?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
+        `${env.NEXT_PUBLIC_TMDB_BASE_URL}/movie/${movie.imdbId}?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
       );
       const json = await res.json();
-      return json;
+      return { ...json, dbId: movie.id, screens: movie.screens };
     })
   );
-  return movies;
+  return imdbMovies;
 };
 
 const Reserve: NextPage = () => {
-  const [selectedMovie, setSelectedMovie] = useState<string | null | undefined>(
-    null
-  );
-
-  const [initialShowtime, setInitialShowtime] = useState<string>("0");
+  const [selectedMovie, setSelectedMovie] = useState<
+    { title: string; id: string; screens: Screen[] } | null | undefined
+  >(null);
 
   const disclosure = useDisclosure(false);
 
   const { data: movieIds } = api.movie.getAll.useQuery();
-
-  const { data: movies, isLoading } = useQuery<IMovie[]>({
+  const { data: movies, isLoading } = useQuery<ICompleteMovie[] | null>({
     queryKey: ["movies"],
-    queryFn: () => fetchMovies(movieIds?.map((m) => m.imdbId) ?? [""]),
+    queryFn: () => fetchMovies(movieIds),
     enabled: !!movieIds,
   });
-
   return (
     <main
       style={{
         minHeight: "42.6vh",
       }}
     >
-      <NewTicketWizard
-        movieTitle={selectedMovie}
-        disclosure={disclosure}
-        initialShowtime={initialShowtime}
-      />
+      <NewTicketWizard movie={selectedMovie} disclosure={disclosure} />
       <Title tt={"uppercase"} align="center" weight={"normal"}>
         On theaters
       </Title>
@@ -91,8 +92,11 @@ const Reserve: NextPage = () => {
                     },
                   }}
                   onClick={() => {
-                    setSelectedMovie(m.title);
-                    setInitialShowtime("0");
+                    setSelectedMovie({
+                      title: m.title,
+                      id: m.dbId,
+                      screens: m.screens,
+                    });
                     disclosure[1].open();
                   }}
                 >
@@ -112,56 +116,24 @@ const Reserve: NextPage = () => {
                 {m.adult && <Text color="red">Adult</Text>}
               </Flex>
               <Flex align={"center"} gap={"xs"}>
-                <Text>Available Schedules:</Text>
+                <Text>Available Dates:</Text>
                 <Group spacing={"xs"}>
-                  <Button
-                    color="gray"
-                    variant="light"
-                    size="xs"
-                    onClick={() => {
-                      setSelectedMovie(m.title);
-                      setInitialShowtime("0");
-                      disclosure[1].open();
-                    }}
-                  >
-                    1:30pm
-                  </Button>
-                  <Button
-                    color="gray"
-                    variant="light"
-                    size="xs"
-                    onClick={() => {
-                      setSelectedMovie(m.title);
-                      setInitialShowtime("1");
-                      disclosure[1].open();
-                    }}
-                  >
-                    4:00pm
-                  </Button>
-                  <Button
-                    color="gray"
-                    variant="light"
-                    size="xs"
-                    onClick={() => {
-                      setSelectedMovie(m.title);
-                      setInitialShowtime("2");
-                      disclosure[1].open();
-                    }}
-                  >
-                    6:30pm
-                  </Button>
-                  <Button
-                    color="gray"
-                    variant="light"
-                    size="xs"
-                    onClick={() => {
-                      setSelectedMovie(m.title);
-                      setInitialShowtime("3");
-                      disclosure[1].open();
-                    }}
-                  >
-                    9:00pm
-                  </Button>
+                  {Array.from(
+                    new Set(
+                      m.screens?.map((screen) =>
+                        screen.date.toLocaleDateString()
+                      )
+                    )
+                  ).map((date) => (
+                    <Button
+                      sx={{ cursor: "default" }}
+                      color="gray"
+                      variant="light"
+                      size="xs"
+                    >
+                      {date}
+                    </Button>
+                  ))}
                 </Group>
               </Flex>
             </Box>

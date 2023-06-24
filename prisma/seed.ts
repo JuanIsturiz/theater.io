@@ -1,6 +1,23 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
+function getSeats(screenId: string) {
+  const seats = [];
+  const letters = "ABCDEFGH";
+  let letterIdx = 0;
+  for (let i = 1; i < 9; i++) {
+    for (let j = 1; j < 13; j++) {
+      seats.push({
+        column: j,
+        row: letters[letterIdx] || "",
+        screenId,
+      });
+    }
+    letterIdx++;
+  }
+  return seats;
+}
+
 async function seed() {
   // initial imdbIds
   const imdbIds = [
@@ -41,7 +58,7 @@ async function seed() {
 
   // insert rooms
   await prisma.room.createMany({
-    data: roomNames.map((r) => ({ name: r })),
+    data: roomNames.map((rn) => ({ name: rn })),
   });
 
   // get rooms
@@ -77,6 +94,16 @@ async function seed() {
   // insert screens
   await prisma.screen.createMany({
     data: screens,
+  });
+
+  const dbScreens = await prisma.screen.findMany();
+
+  dbScreens.forEach(async (screen) => {
+    const seats = getSeats(screen.id);
+
+    await prisma.seat.createMany({
+      data: seats,
+    });
   });
 }
 

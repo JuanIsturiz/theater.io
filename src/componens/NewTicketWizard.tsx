@@ -15,12 +15,24 @@ import {
   Card,
   Title,
   Divider,
+  rem,
 } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
 import { IconArmchair, IconMovie } from "@tabler/icons-react";
+import { RouterOutputs, api } from "~/utils/api";
+
+type Screen = RouterOutputs["screen"]["getAll"][number];
+type Seat = RouterOutputs["seat"]["getByScreen"][number];
+
 interface NewTicketWizardProps {
-  movieTitle: string | null | undefined;
-  initialShowtime: string;
+  movie:
+    | {
+        title: string;
+        id: string;
+        screens: Screen[];
+      }
+    | null
+    | undefined;
   disclosure: readonly [
     boolean,
     {
@@ -31,68 +43,78 @@ interface NewTicketWizardProps {
   ];
 }
 
-interface Seat {
-  row: string | undefined;
-  col: number;
-  available: boolean;
-  userId: string | null;
-}
-
 interface Room {
   left: Array<Seat>;
   center: Array<Seat>;
   right: Array<Seat>;
 }
 
-const getSeats = () => {
+const placeSeats = (seats: Seat[]) => {
   const room: Room = {
     left: [],
     center: [],
     right: [],
   };
-  const letters = "ABCDEFGH";
-  let letterIdx = 0;
-  for (let i = 1; i < 9; i++) {
-    for (let j = 1; j < 13; j++) {
-      if (j < 5) {
-        room.left.push({
-          col: j,
-          row: letters[letterIdx],
-          available: false,
-          userId: null,
-        });
-      } else if (j > 4 && j < 9) {
-        room.center.push({
-          col: j,
-          row: letters[letterIdx],
-          available: false,
-          userId: null,
-        });
-      } else {
-        room.right.push({
-          col: j,
-          row: letters[letterIdx],
-          available: false,
-          userId: null,
-        });
-      }
+  seats.forEach((seat) => {
+    if (seat.column < 5) {
+      room.left.push(seat);
+    } else if (seat.column > 4 && seat.column < 9) {
+      room.center.push(seat);
+    } else {
+      room.right.push(seat);
     }
-    letterIdx++;
-  }
+  });
   return room;
 };
+
+// const getSeats = () => {
+//   const room: Room = {
+//     left: [],
+//     center: [],
+//     right: [],
+//   };
+//   const letters = "ABCDEFGH";
+//   let letterIdx = 0;
+//   for (let i = 1; i < 9; i++) {
+//     for (let j = 1; j < 13; j++) {
+//       if (j < 5) {
+//         room.left.push({
+//           col: j,
+//           row: letters[letterIdx],
+//           available: false,
+//           userId: null,
+//         });
+//       } else if (j > 4 && j < 9) {
+//         room.center.push({
+//           col: j,
+//           row: letters[letterIdx],
+//           available: false,
+//           userId: null,
+//         });
+//       } else {
+//         room.right.push({
+//           col: j,
+//           row: letters[letterIdx],
+//           available: false,
+//           userId: null,
+//         });
+//       }
+//     }
+//     letterIdx++;
+//   }
+//   return room;
+// };
 
 //todo change Radios to SegmentedControl
 
 const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
-  movieTitle,
-  initialShowtime,
+  movie,
   disclosure,
 }) => {
   const [opened, { open, close }] = disclosure;
 
   // testing variables
-  const availableDates = [1686715200000, 1686888000000, 1686974400000];
+  const availableDates = movie?.screens?.map((screen) => screen.date);
 
   // mantine
   const [active, setActive] = useState(0);
@@ -102,10 +124,15 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
     setActive((current) => (current > 0 ? current - 1 : current));
 
   // ticket values
-  const [showtime, setShowtime] = useState<string | null>(null);
   const [datetime, setDatetime] = useState<Date | null>(null);
+  const screensByDate = movie?.screens.filter(
+    (screen) => screen.date.getTime() === datetime?.getTime() && !screen.isFull
+  );
+  const [showtime, setShowtime] = useState<string | null>(null);
   const [reservetSeats, setReservedSeats] = useState<Array<Seat>>([]);
   const [bundle, setBundle] = useState<number | null>(null);
+  const [screen, setScreen] = useState<Screen | undefined>();
+  const [seatQuantity, setSeatQuantity] = useState<number | "">();
 
   const handleClose = () => {
     setShowtime(null);
@@ -116,11 +143,19 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
     close();
   };
 
+  const { data: seats, isLoading } = api.seat.getByScreen.useQuery(
+    { screenId: screen?.id ?? "" },
+    {
+      enabled: !!screen?.id,
+    }
+  );
+
+  const availableSeats = seats?.filter((seat) => !seat.userId).length || 0;
   return (
     <Modal
       opened={opened}
       onClose={handleClose}
-      title={movieTitle || "Movie Ticket"}
+      title={movie?.title || "Movie Ticket"}
       size={"xl"}
     >
       <Stepper
@@ -141,8 +176,8 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                   value={datetime}
                   onChange={setDatetime}
                   excludeDate={(date) => {
-                    return !availableDates.some(
-                      (avDate) => avDate === date.getTime()
+                    return !availableDates?.some(
+                      (avDate) => avDate.getTime() === date.getTime()
                     );
                   }}
                 />
@@ -150,34 +185,65 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
             </Box>
             <Box>
               <Box sx={{ textAlign: "center" }} mb={"xl"}>
-                <Radio.Group
-                  value={showtime || initialShowtime}
-                  onChange={setShowtime}
-                  name="showtime"
-                  label="Select your desired showtime"
-                  description="Only available option will be on display"
-                >
-                  <Flex gap={"sm"} mt={"sm"}>
-                    <Radio value={"0"} label="1:30pm" />
-                    <Radio value={"1"} label="4:00pm" />
-                    <Radio value={"2"} label="6:30pm" />
-                    <Radio value={"3"} label="9:00pm" />
-                  </Flex>
-                </Radio.Group>
+                {datetime && (
+                  <Radio.Group
+                    value={showtime || ""}
+                    onChange={setShowtime}
+                    name="showtime"
+                    label="Select your desired showtime"
+                    description="Only available option will be on display"
+                  >
+                    <Flex gap={"sm"} mt={"sm"}>
+                      {Array.from(
+                        new Set(screensByDate?.map((screen) => screen.showtime))
+                      )
+                        .sort((a, b) => Number(a[0]) - Number(b[0]))
+                        .map((showtime, idx) => (
+                          <Radio
+                            key={idx}
+                            value={idx.toString()}
+                            label={showtime}
+                            onClick={() => {
+                              setScreen(
+                                screensByDate?.find(
+                                  (screen) => screen.showtime === showtime
+                                )
+                              );
+                            }}
+                          />
+                        ))}
+                    </Flex>
+                  </Radio.Group>
+                )}
               </Box>
               <NumberInput
+                value={seatQuantity}
+                onChange={setSeatQuantity}
+                mb={rem(2.5)}
                 label="Number of seats"
-                description="From 0 to 4"
+                description={`From 0 to ${
+                  availableSeats < 4 ? availableSeats : 4
+                }`}
                 placeholder="2 Seats"
-                max={4}
+                max={availableSeats < 4 ? availableSeats : 4}
                 min={1}
               />
+              {seats && (
+                <Text size={"sm"} opacity={0.6}>
+                  Available seats: {availableSeats}
+                </Text>
+              )}
             </Box>
           </Flex>
         </Stepper.Step>
         {/* Seats */}
         <Stepper.Step label="Seats" description="Seats location and quantity">
-          <SeatPicker room={getSeats()} />
+          {seats && (
+            <SeatPicker
+              room={placeSeats(seats)}
+              seatQuantity={seatQuantity || 0}
+            />
+          )}
         </Stepper.Step>
         {/* Bundle */}
         <Stepper.Step label="Bundle" description="Choose bundle">
@@ -418,10 +484,13 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
   );
 };
 
-const SeatPicker: React.FC<{ room: Room }> = ({ room }) => {
+const SeatPicker: React.FC<{ room: Room; seatQuantity: number }> = ({
+  room,
+  seatQuantity,
+}) => {
   const [numSeats, setNumSeats] = useState(0);
   const [seatsLocation, setSeatsLocation] = useState<Array<number>>([]);
-
+  //todo add selected seats functionality
   return (
     <Flex gap={"4rem"} align={"flex-end"}>
       <SimpleGrid w={"1rem"} spacing={"1.23rem"}>
@@ -462,7 +531,7 @@ const SeatPicker: React.FC<{ room: Room }> = ({ room }) => {
             <SimpleGrid cols={4}>
               {room.left.map((seat, idx) => (
                 <Center key={idx}>
-                  {seat.col}
+                  {seat.column}
                   <ActionIcon>
                     <IconArmchair />
                   </ActionIcon>
@@ -474,7 +543,7 @@ const SeatPicker: React.FC<{ room: Room }> = ({ room }) => {
             <SimpleGrid cols={4}>
               {room.center.map((seat, idx) => (
                 <Center key={idx}>
-                  {seat.col}
+                  {seat.column}
                   <ActionIcon>
                     <IconArmchair />
                   </ActionIcon>
@@ -486,7 +555,7 @@ const SeatPicker: React.FC<{ room: Room }> = ({ room }) => {
             <SimpleGrid cols={4}>
               {room.right.map((seat, idx) => (
                 <Center key={idx}>
-                  {seat.col}
+                  {seat.column}
                   <ActionIcon>
                     <IconArmchair />
                   </ActionIcon>

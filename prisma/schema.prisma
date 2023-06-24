@@ -34,19 +34,22 @@ model Screen {
     movie    Movie    @relation(fields: [movieId], references: [id])
     movieId  String
     room     Room     @relation(fields: [roomId], references: [id])
-    seats    Seat[]
     roomId   String
+    seats    Seat[]
     showtime String
     date     DateTime
+    isFull   Boolean  @default(false)
 }
 
 model Seat {
     id       String   @id @default(cuid())
-    userId   String
+    column   Int
+    row      String
+    userId   String?
     screen   Screen[]
     screenId String
-    ticket   Ticket   @relation(fields: [ticketId], references: [id])
-    ticketId String
+    ticket   Ticket?  @relation(fields: [ticketId], references: [id])
+    ticketId String?
 }
 
 model Ticket {
