@@ -4,7 +4,6 @@ import {
   Button,
   Container,
   Flex,
-  List,
   SegmentedControl,
   Select,
   SimpleGrid,
@@ -50,7 +49,7 @@ const VOTE_OPTIONS = [
 ];
 
 const fetchGenres = async () => {
-  const res = await fetch(
+  const res: Response = await fetch(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/genre/movie/list?language=en&api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
   const json: IGenresJson = await res.json();
@@ -76,17 +75,17 @@ const fetchDiscoverMovies = async (query: IQuery) => {
       queries += "&";
       return;
     }
-    queries += `${key}=${query[key as keyof IQuery]}`;
+    queries += `${key}=${query[key as keyof IQuery] ?? ""}`;
     queries += "&";
   });
   queries += "api_key=" + env.NEXT_PUBLIC_TMDB_API_KEY;
-  const res = await fetch(queries);
+  const res: Response = await fetch(queries);
   const json: IDiscoverJson = await res.json();
   return json.results;
 };
 
 const fetchSearchMovies = async (info: { query: string; page: number }) => {
-  const res = await fetch(
+  const res: Response = await fetch(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/search/movie?include_adult=false&language=en-US&page=${info.page}&query=${info.query}&api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
   const json: ISearchJson = await res.json();
@@ -110,7 +109,7 @@ const Movies: NextPage = () => {
 
   const {
     data: discoverMovies,
-    isLoading: loadingDiscover,
+    // isLoading: loadingDiscover,
     refetch: refetchDiscover,
   } = useQuery({
     queryKey: ["discover-movies"],
@@ -126,7 +125,7 @@ const Movies: NextPage = () => {
 
   const {
     data: searchMovies,
-    isLoading: loadingSearch,
+    // isLoading: loadingSearch,
     refetch: refetchSearch,
   } = useQuery({
     queryKey: ["search-movies"],
@@ -142,10 +141,10 @@ const Movies: NextPage = () => {
     e.preventDefault();
     setPage(1);
     if (search) {
-      refetchSearch();
+      void refetchSearch();
       setMovieList("search");
     } else {
-      refetchDiscover();
+      void refetchDiscover();
       setMovieList("discover");
     }
   };

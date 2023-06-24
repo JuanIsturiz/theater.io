@@ -1,5 +1,5 @@
 import { Box, Button, Flex, Image, Text, Transition, rem } from "@mantine/core";
-import { IDiscoverResult, ISearchResult, Result } from "~/types";
+import type { IDiscoverResult, ISearchResult, Result } from "~/types";
 import { useHover } from "@mantine/hooks";
 import { IconPhotoOff, IconStarFilled } from "@tabler/icons-react";
 import { useRouter } from "next/router";
@@ -18,7 +18,7 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
   const router = useRouter();
 
   const handleMovie = () => {
-    router.replace(`/movies/${movie.id}`);
+    void router.replace(`/movies/${movie.id}`);
   };
 
   return (
@@ -54,6 +54,7 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
               transform: boxHover || flexHover ? "scale(1.1)" : "scale(1)",
             }}
             withPlaceholder
+            alt={movie.title || "Movie Poster"}
           />
         ) : (
           <Box

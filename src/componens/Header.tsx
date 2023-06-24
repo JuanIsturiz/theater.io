@@ -34,7 +34,7 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
         <Flex justify={"space-between"} align={"center"}>
           <Title
             color="blue"
-            onClick={() => router.replace("/")}
+            onClick={() => void router.replace("/")}
             sx={{
               cursor: "pointer",
               transition: "transform 200ms ease-in-out",
@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
                 radius={"xs"}
                 variant="subtle"
                 color="gray"
-                onClick={() => router.push("/movies")}
+                onClick={() => void router.push("/movies")}
               >
                 Movies
               </Button>
@@ -61,7 +61,7 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
                 radius={"xs"}
                 variant="subtle"
                 color="gray"
-                onClick={() => router.push("/tickets")}
+                onClick={() => void router.push("/tickets")}
               >
                 Tickets
               </Button>
@@ -70,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
                 radius={"xs"}
                 variant="subtle"
                 color="gray"
-                onClick={() => router.push("/reserve")}
+                onClick={() => void router.push("/reserve")}
               >
                 Reserve
               </Button>
@@ -79,7 +79,7 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
                 radius={"xs"}
                 variant="subtle"
                 color="gray"
-                onClick={() => router.push("/info")}
+                onClick={() => void router.push("/info")}
               >
                 Info
               </Button>
@@ -100,7 +100,7 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
                       <Avatar
                         size={32}
                         src={user.user.profileImageUrl}
-                        alt={`${user.user.username} profile picture`}
+                        alt={`${user.user.username ?? "user"} profile picture`}
                         radius={"xl"}
                         mr={".5rem"}
                       />

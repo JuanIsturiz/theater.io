@@ -9,7 +9,7 @@ import {
   rem,
 } from "@mantine/core";
 import { useLoadScript, GoogleMap, MarkerF } from "@react-google-maps/api";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import { useMemo } from "react";
 import { env } from "~/env.mjs";
 import styles from "~/styles/info.module.css";

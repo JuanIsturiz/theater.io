@@ -1,7 +1,6 @@
 import { Anchor, Box, Center, Table, Text, Title } from "@mantine/core";
 import { IconTicketOff } from "@tabler/icons-react";
 import type { NextPage } from "next";
-import Link from "next/link";
 import { useRouter } from "next/router";
 
 const Tickets: NextPage = () => {
@@ -51,7 +50,7 @@ const Tickets: NextPage = () => {
           </Center>
           <Text opacity={0.7}>
             Create a new ticket{" "}
-            <Anchor onClick={() => router.replace("reserve")}>here</Anchor>
+            <Anchor onClick={() => void router.replace("reserve")}>here</Anchor>
           </Text>
         </Box>
       )}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Stepper,
@@ -19,10 +19,14 @@ import {
 } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
 import { IconArmchair, IconMovie } from "@tabler/icons-react";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 
 type Screen = RouterOutputs["screen"]["getAll"][number];
 type Seat = RouterOutputs["seat"]["getByScreen"][number];
+
+interface SeatByGroup extends Seat {
+  group: string;
+}
 
 interface NewTicketWizardProps {
   movie:
@@ -44,9 +48,9 @@ interface NewTicketWizardProps {
 }
 
 interface Room {
-  left: Array<Seat>;
-  center: Array<Seat>;
-  right: Array<Seat>;
+  left: Array<SeatByGroup>;
+  center: Array<SeatByGroup>;
+  right: Array<SeatByGroup>;
 }
 
 const placeSeats = (seats: Seat[]) => {
@@ -57,61 +61,23 @@ const placeSeats = (seats: Seat[]) => {
   };
   seats.forEach((seat) => {
     if (seat.column < 5) {
-      room.left.push(seat);
+      room.left.push({ ...seat, group: "left" });
     } else if (seat.column > 4 && seat.column < 9) {
-      room.center.push(seat);
+      room.center.push({ ...seat, group: "center" });
     } else {
-      room.right.push(seat);
+      room.right.push({ ...seat, group: "right" });
     }
   });
   return room;
 };
 
-// const getSeats = () => {
-//   const room: Room = {
-//     left: [],
-//     center: [],
-//     right: [],
-//   };
-//   const letters = "ABCDEFGH";
-//   let letterIdx = 0;
-//   for (let i = 1; i < 9; i++) {
-//     for (let j = 1; j < 13; j++) {
-//       if (j < 5) {
-//         room.left.push({
-//           col: j,
-//           row: letters[letterIdx],
-//           available: false,
-//           userId: null,
-//         });
-//       } else if (j > 4 && j < 9) {
-//         room.center.push({
-//           col: j,
-//           row: letters[letterIdx],
-//           available: false,
-//           userId: null,
-//         });
-//       } else {
-//         room.right.push({
-//           col: j,
-//           row: letters[letterIdx],
-//           available: false,
-//           userId: null,
-//         });
-//       }
-//     }
-//     letterIdx++;
-//   }
-//   return room;
-// };
-
-//todo change Radios to SegmentedControl
+//todo add animations and unavailable seats feedback
 
 const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
   movie,
   disclosure,
 }) => {
-  const [opened, { open, close }] = disclosure;
+  const [opened, { close }] = disclosure;
 
   // testing variables
   const availableDates = movie?.screens?.map((screen) => screen.date);
@@ -129,21 +95,26 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
     (screen) => screen.date.getTime() === datetime?.getTime() && !screen.isFull
   );
   const [showtime, setShowtime] = useState<string | null>(null);
-  const [reservetSeats, setReservedSeats] = useState<Array<Seat>>([]);
   const [bundle, setBundle] = useState<number | null>(null);
   const [screen, setScreen] = useState<Screen | undefined>();
   const [seatQuantity, setSeatQuantity] = useState<number | "">();
+  const [selectedSeats, setSelectedSeats] = useState<Array<SeatByGroup>>([]);
 
   const handleClose = () => {
     setShowtime(null);
     setDatetime(null);
-    setReservedSeats([]);
+    setSeatQuantity("");
+    setSelectedSeats([]);
+    setScreen(undefined);
     setBundle(null);
     setActive(0);
     close();
   };
 
-  const { data: seats, isLoading } = api.seat.getByScreen.useQuery(
+  const {
+    data: seats,
+    // isLoading
+  } = api.seat.getByScreen.useQuery(
     { screenId: screen?.id ?? "" },
     {
       enabled: !!screen?.id,
@@ -240,6 +211,8 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
         <Stepper.Step label="Seats" description="Seats location and quantity">
           {seats && (
             <SeatPicker
+              selectedSeats={selectedSeats}
+              setSelectedSeats={setSelectedSeats}
               room={placeSeats(seats)}
               seatQuantity={seatQuantity || 0}
             />
@@ -484,13 +457,21 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
   );
 };
 
-const SeatPicker: React.FC<{ room: Room; seatQuantity: number }> = ({
-  room,
-  seatQuantity,
-}) => {
-  const [numSeats, setNumSeats] = useState(0);
-  const [seatsLocation, setSeatsLocation] = useState<Array<number>>([]);
-  //todo add selected seats functionality
+const SeatPicker: React.FC<{
+  room: Room;
+  seatQuantity: number;
+  selectedSeats: SeatByGroup[];
+  setSelectedSeats: React.Dispatch<React.SetStateAction<SeatByGroup[]>>;
+}> = ({ selectedSeats, setSelectedSeats, room, seatQuantity }) => {
+  const [selectedRow, setSelectedRow] = useState<string | null>(null);
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedSeats.length === 0) {
+      setSelectedRow(null);
+      setSelectedGroup(null);
+    }
+  }, [selectedSeats, selectedGroup]);
   return (
     <Flex gap={"4rem"} align={"flex-end"}>
       <SimpleGrid w={"1rem"} spacing={"1.23rem"}>
@@ -530,36 +511,51 @@ const SeatPicker: React.FC<{ room: Room; seatQuantity: number }> = ({
           <Box>
             <SimpleGrid cols={4}>
               {room.left.map((seat, idx) => (
-                <Center key={idx}>
-                  {seat.column}
-                  <ActionIcon>
-                    <IconArmchair />
-                  </ActionIcon>
-                </Center>
+                <SeatOption
+                  key={idx}
+                  seatQuantity={seatQuantity}
+                  seat={seat}
+                  selectedRow={selectedRow}
+                  setSelectedRow={setSelectedRow}
+                  selectedSeats={selectedSeats}
+                  setSelectedSeats={setSelectedSeats}
+                  selectedGroup={selectedGroup}
+                  setSelectedGroup={setSelectedGroup}
+                />
               ))}
             </SimpleGrid>
           </Box>
           <Box>
             <SimpleGrid cols={4}>
               {room.center.map((seat, idx) => (
-                <Center key={idx}>
-                  {seat.column}
-                  <ActionIcon>
-                    <IconArmchair />
-                  </ActionIcon>
-                </Center>
+                <SeatOption
+                  key={idx}
+                  seatQuantity={seatQuantity}
+                  seat={seat}
+                  selectedRow={selectedRow}
+                  setSelectedRow={setSelectedRow}
+                  selectedSeats={selectedSeats}
+                  setSelectedSeats={setSelectedSeats}
+                  selectedGroup={selectedGroup}
+                  setSelectedGroup={setSelectedGroup}
+                />
               ))}
             </SimpleGrid>
           </Box>
           <Box>
             <SimpleGrid cols={4}>
               {room.right.map((seat, idx) => (
-                <Center key={idx}>
-                  {seat.column}
-                  <ActionIcon>
-                    <IconArmchair />
-                  </ActionIcon>
-                </Center>
+                <SeatOption
+                  key={idx}
+                  seatQuantity={seatQuantity}
+                  seat={seat}
+                  selectedRow={selectedRow}
+                  setSelectedRow={setSelectedRow}
+                  selectedSeats={selectedSeats}
+                  setSelectedSeats={setSelectedSeats}
+                  selectedGroup={selectedGroup}
+                  setSelectedGroup={setSelectedGroup}
+                />
               ))}
             </SimpleGrid>
           </Box>
@@ -569,4 +565,67 @@ const SeatPicker: React.FC<{ room: Room; seatQuantity: number }> = ({
   );
 };
 
+const SeatOption: React.FC<{
+  seatQuantity: number;
+  seat: SeatByGroup;
+  selectedSeats: SeatByGroup[];
+  setSelectedSeats: React.Dispatch<React.SetStateAction<SeatByGroup[]>>;
+  selectedRow: string | null;
+  setSelectedRow: React.Dispatch<React.SetStateAction<string | null>>;
+  selectedGroup: string | null;
+  setSelectedGroup: React.Dispatch<React.SetStateAction<string | null>>;
+}> = ({
+  seatQuantity,
+  seat,
+  selectedRow,
+  setSelectedRow,
+  selectedSeats,
+  setSelectedSeats,
+  selectedGroup,
+  setSelectedGroup,
+}) => {
+  const [isSelected, setIsSelected] = useState(false);
+
+  const handleClick = () => {
+    if (seatQuantity === selectedSeats.length) return;
+    if (!selectedRow) {
+      setSelectedRow(seat.row);
+    }
+    if (!selectedGroup) {
+      setSelectedGroup(seat.group);
+    }
+    if (selectedRow && seat.row !== selectedRow) return;
+    if (selectedGroup && seat.group !== selectedGroup) return;
+    if (!isSelected) {
+      if (
+        selectedSeats.length &&
+        !selectedSeats.some(
+          (selectedSeat) =>
+            selectedSeat.column === seat.column - 1 ||
+            selectedSeat.column === seat.column + 1
+        )
+      )
+        return;
+      setSelectedSeats((prev) => [...prev, seat]);
+    } else {
+      setSelectedSeats((prev) => prev.filter((old) => old.id !== seat.id));
+    }
+    setIsSelected(!isSelected);
+  };
+
+  return (
+    <Center>
+      {seat.column}
+      <ActionIcon
+        ml={rem(2)}
+        sx={(theme) => ({
+          color: isSelected ? theme.colors.blue : theme.colors.white,
+        })}
+        onClick={handleClick}
+      >
+        <IconArmchair />
+      </ActionIcon>
+    </Center>
+  );
+};
 export default NewTicketWizard;

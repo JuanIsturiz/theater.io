@@ -1,7 +1,7 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
-import { ColorScheme, Container, MantineProvider } from "@mantine/core";
-import { FC, ReactNode, useState } from "react";
+import { type ColorScheme, Container, MantineProvider } from "@mantine/core";
+import { type FC, type ReactNode, useState } from "react";
 import Footer from "~/componens/Footer";
 import Header from "~/componens/Header";
 import ScrollButton from "~/componens/ScrollButton";

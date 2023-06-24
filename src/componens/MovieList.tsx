@@ -1,5 +1,5 @@
 import { SimpleGrid } from "@mantine/core";
-import { IDiscoverResult, ISearchResult, Result } from "~/types";
+import type { IDiscoverResult, ISearchResult, Result } from "~/types";
 import MoviePanel from "./MoviePanel";
 
 interface MovieListProps {

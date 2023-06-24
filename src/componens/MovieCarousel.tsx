@@ -1,6 +1,6 @@
 import { Carousel } from "@mantine/carousel";
 import { Box, Button, Group, Text, Title } from "@mantine/core";
-import { Result } from "~/types";
+import type { Result } from "~/types";
 import styles from "~/styles/movies.module.css";
 
 interface MovieCarouselProps {
@@ -33,7 +33,7 @@ const MovieSlide: React.FC<{ movie: Result | undefined }> = ({ movie }) => {
       px={"2.75rem"}
       py={".5rem"}
       sx={{
-        backgroundImage: `url(${tmdbImagePath + movie?.backdrop_path})`,
+        backgroundImage: `url(${tmdbImagePath}${movie?.backdrop_path ?? ""})`,
       }}
     >
       <Title

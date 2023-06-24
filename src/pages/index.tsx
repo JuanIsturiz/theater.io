@@ -4,10 +4,10 @@ import { type NextPage } from "next";
 import MovieCarousel from "~/componens/MovieCarousel";
 import MovieList from "~/componens/MovieList";
 import { env } from "~/env.mjs";
-import { IMoviesJson, Result } from "~/types";
+import type { IMoviesJson, Result } from "~/types";
 
 const fetchMovies = async (limit: number) => {
-  const res = await fetch(
+  const res: Response = await fetch(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/trending/movie/day?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
   const json: IMoviesJson = await res.json();

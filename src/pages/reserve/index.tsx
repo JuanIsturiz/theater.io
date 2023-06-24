@@ -7,7 +7,7 @@ import { useState } from "react";
 import NewTicketWizard from "~/componens/NewTicketWizard";
 import { env } from "~/env.mjs";
 import type { IMovie } from "~/types";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 
 type Movie = RouterOutputs["movie"]["getAll"][number];
 type Screen = RouterOutputs["screen"]["getAll"][number];
@@ -21,11 +21,17 @@ const fetchMovies = async (movies: Movie[] | undefined) => {
   if (!movies) return null;
   const imdbMovies: ICompleteMovie[] = await Promise.all(
     movies.map(async (movie) => {
-      const res = await fetch(
+      const res: Response = await fetch(
         `${env.NEXT_PUBLIC_TMDB_BASE_URL}/movie/${movie.imdbId}?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
       );
-      const json = await res.json();
-      return { ...json, dbId: movie.id, screens: movie.screens };
+      const json: IMovie = await res.json();
+
+      const completeMovie: ICompleteMovie = {
+        ...json,
+        dbId: movie.id,
+        screens: movie.screens as Screen[],
+      };
+      return completeMovie;
     })
   );
   return imdbMovies;
@@ -39,7 +45,10 @@ const Reserve: NextPage = () => {
   const disclosure = useDisclosure(false);
 
   const { data: movieIds } = api.movie.getAll.useQuery();
-  const { data: movies, isLoading } = useQuery<ICompleteMovie[] | null>({
+  const {
+    data: movies,
+    // isLoading
+  } = useQuery<ICompleteMovie[] | null>({
     queryKey: ["movies"],
     queryFn: () => fetchMovies(movieIds),
     enabled: !!movieIds,
@@ -126,6 +135,7 @@ const Reserve: NextPage = () => {
                     )
                   ).map((date) => (
                     <Button
+                      key={date}
                       sx={{ cursor: "default" }}
                       color="gray"
                       variant="light"

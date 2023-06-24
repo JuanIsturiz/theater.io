@@ -1,30 +1,18 @@
-import {
-  Blockquote,
-  Box,
-  Flex,
-  Image,
-  SimpleGrid,
-  Text,
-  Title,
-  rem,
-} from "@mantine/core";
+import { Box, Flex, Image, SimpleGrid, Text, Title, rem } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import type { GetServerSidePropsContext, NextPage } from "next";
 import { env } from "~/env.mjs";
-import { IMovie } from "~/types";
-
-// https://api.themoviedb.org/3/movie/603692?api_key=ddd66c742f6427696660035a18bbbed4
+import type { IMovie } from "~/types";
 
 // hours converter helper
 const toHoursAndMinutes = (totalMinutes: number) => {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
-
   return `${hours}h ${minutes}m`;
 };
 
 const fetchMovie = async (id: string) => {
-  const res = await fetch(
+  const res: Response = await fetch(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/movie/${id}?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
   const json: IMovie = await res.json();
@@ -33,20 +21,19 @@ const fetchMovie = async (id: string) => {
 
 const MoviePage: NextPage<{ id: string }> = ({ id }) => {
   const tmdbImagePath = "https://image.tmdb.org/t/p/original";
-  const { data: movie, isLoading } = useQuery<IMovie>({
+  const { data: movie } = useQuery<IMovie>({
     queryKey: ["movie"],
     queryFn: () => fetchMovie(id),
   });
 
   if (!movie) return null;
-  console.log(movie);
 
   return (
     <main>
       <Box
-        sx={(theme) => ({
-          boxShadow: "rgba(0, 0, 0, 0.75) 0px 5px 15px",
-        })}
+        sx={{
+          boxShadow: `rgba(0, 0, 0, 0.75) 0px 5px 15px`,
+        }}
       >
         <Box
           p={rem(20)}
@@ -90,6 +77,7 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
                 height={rem(380)}
                 width={rem(240)}
                 src={tmdbImagePath + movie.poster_path}
+                alt={movie.title || "Movie Poster"}
               />
             </Box>
             <Box>
@@ -110,10 +98,9 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
               <Text size={"xl"} color="white">
                 {toHoursAndMinutes(movie.runtime)}
               </Text>
-              <Text size={"lg"} fs={"italic"} my={rem(20)}>
+              <Text size={"lg"} fs={"italic"} color="gray.4" my={rem(20)}>
                 {movie.tagline}
               </Text>
-
               <Text size={"xl"} weight={500} color="white">
                 Overview
               </Text>
