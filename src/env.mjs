@@ -12,6 +12,12 @@ export const env = createEnv({
     NEXT_PUBLIC_TMDB_API_KEY: z.string().min(1),
     NEXT_PUBLIC_TMDB_BASE_URL: z.string().min(1),
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().min(1),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().min(1),
+    TICKET_PRICE_ID: z.string().min(1),
+    BASIC_BUNDLE_PRICE_ID: z.string().min(1),
+    PREMIUM_BUNDLE_PRICE_ID: z.string().min(1),
+    VIP_BUNDLE_PRICE_ID: z.string().min(1),
   },
 
   /**
@@ -24,6 +30,7 @@ export const env = createEnv({
     NEXT_PUBLIC_TMDB_API_KEY: z.string().min(1),
     NEXT_PUBLIC_TMDB_BASE_URL: z.string().min(1),
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().min(1),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
   },
 
   /**
@@ -37,6 +44,13 @@ export const env = createEnv({
     NEXT_PUBLIC_TMDB_BASE_URL: process.env.NEXT_PUBLIC_TMDB_BASE_URL,
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY:
       process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    TICKET_PRICE_ID: process.env.TICKET_PRICE,
+    BASIC_BUNDLE_PRICE_ID: process.env.BASIC_BUNDLE_PRICE,
+    PREMIUM_BUNDLE_PRICE_ID: process.env.PREMIUM_BUNDLE_PRICE,
+    VIP_BUNDLE_PRICE_ID: process.env.VIP_BUNDLE_PRICE,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

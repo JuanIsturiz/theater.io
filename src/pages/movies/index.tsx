@@ -12,6 +12,7 @@ import {
   Title,
   rem,
 } from "@mantine/core";
+import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import type { NextPage } from "next";
 import { env } from "~/env.mjs";
@@ -49,11 +50,10 @@ const VOTE_OPTIONS = [
 ];
 
 const fetchGenres = async () => {
-  const res: Response = await fetch(
+  const { data } = await axios.get<IGenresJson>(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/genre/movie/list?language=en&api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
-  const json: IGenresJson = await res.json();
-  return json.genres;
+  return data.genres;
 };
 
 const fetchDiscoverMovies = async (query: IQuery) => {
@@ -79,17 +79,15 @@ const fetchDiscoverMovies = async (query: IQuery) => {
     queries += "&";
   });
   queries += "api_key=" + env.NEXT_PUBLIC_TMDB_API_KEY;
-  const res: Response = await fetch(queries);
-  const json: IDiscoverJson = await res.json();
-  return json.results;
+  const { data } = await axios.get<IDiscoverJson>(queries);
+  return data.results;
 };
 
 const fetchSearchMovies = async (info: { query: string; page: number }) => {
-  const res: Response = await fetch(
+  const { data } = await axios.get<ISearchJson>(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/search/movie?include_adult=false&language=en-US&page=${info.page}&query=${info.query}&api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
-  const json: ISearchJson = await res.json();
-  return json.results;
+  return data.results;
 };
 
 const Movies: NextPage = () => {

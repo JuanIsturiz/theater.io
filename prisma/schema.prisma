@@ -58,8 +58,9 @@ model Ticket {
     seats     Seat[]
     createdAt DateTime @default(now())
     date      DateTime
-    bundle    Bundle
+    bundle    Bundle?
     showtime  String
+    verified  Boolean  @default(false)
     movie     Movie    @relation(fields: [movieId], references: [id])
     movieId   String
 }

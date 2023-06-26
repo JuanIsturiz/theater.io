@@ -72,6 +72,7 @@ const placeSeats = (seats: Seat[]) => {
 };
 
 //todo add animations and unavailable seats feedback
+//todo add stripe stuff
 
 const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
   movie,
@@ -95,7 +96,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
     (screen) => screen.date.getTime() === datetime?.getTime() && !screen.isFull
   );
   const [showtime, setShowtime] = useState<string | null>(null);
-  const [bundle, setBundle] = useState<number | null>(null);
+  const [bundle, setBundle] = useState<string | null>(null);
   const [screen, setScreen] = useState<Screen | undefined>();
   const [seatQuantity, setSeatQuantity] = useState<number | "">();
   const [selectedSeats, setSelectedSeats] = useState<Array<SeatByGroup>>([]);
@@ -172,7 +173,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                         .map((showtime, idx) => (
                           <Radio
                             key={idx}
-                            value={idx.toString()}
+                            value={showtime}
                             label={showtime}
                             onClick={() => {
                               setScreen(
@@ -224,7 +225,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
             <Card
               p="xl"
               sx={{ textAlign: "center", overflow: "visible" }}
-              opacity={bundle === 0 ? 0.7 : 1}
+              opacity={bundle === "BASIC" ? 0.7 : 1}
             >
               <Box
                 pos={"relative"}
@@ -257,15 +258,24 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                 <Divider />
               </Card.Section>
               <Card.Section>
-                <Button tt={"uppercase"} onClick={() => setBundle(0)}>
-                  {bundle === 0 ? "selected" : "select"}
+                <Button
+                  tt={"uppercase"}
+                  onClick={() => {
+                    if (bundle === "BASIC") {
+                      setBundle(null);
+                    } else {
+                      setBundle("BASIC");
+                    }
+                  }}
+                >
+                  {bundle === "BASIC" ? "selected" : "select"}
                 </Button>
               </Card.Section>
             </Card>
             <Card
               p="xl"
               sx={{ textAlign: "center", overflow: "visible" }}
-              opacity={bundle === 1 ? 0.7 : 1}
+              opacity={bundle === "PREMIUM" ? 0.7 : 1}
             >
               <Box
                 pos={"relative"}
@@ -301,16 +311,22 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                 <Button
                   tt={"uppercase"}
                   color="dark"
-                  onClick={() => setBundle(1)}
+                  onClick={() => {
+                    if (bundle === "PREMIUM") {
+                      setBundle(null);
+                    } else {
+                      setBundle("PREMIUM");
+                    }
+                  }}
                 >
-                  {bundle === 1 ? "selected" : "select"}
+                  {bundle === "PREMIUM" ? "selected" : "select"}
                 </Button>
               </Card.Section>
             </Card>{" "}
             <Card
               p="xl"
               sx={{ textAlign: "center", overflow: "visible" }}
-              opacity={bundle === 2 ? 0.7 : 1}
+              opacity={bundle === "VIP" ? 0.7 : 1}
             >
               <Box
                 pos={"relative"}
@@ -344,8 +360,17 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
               </Card.Section>
               {/* bottom, right, left margins are negative – -1 * theme.spacing.xl */}
               <Card.Section>
-                <Button tt={"uppercase"} onClick={() => setBundle(2)}>
-                  {bundle === 2 ? "selected" : "select"}
+                <Button
+                  tt={"uppercase"}
+                  onClick={() => {
+                    if (bundle === "VIP") {
+                      setBundle(null);
+                    } else {
+                      setBundle("VIP");
+                    }
+                  }}
+                >
+                  {bundle === "VIP" ? "selected" : "select"}
                 </Button>
               </Card.Section>
             </Card>
@@ -370,7 +395,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                   borderRadius: "5px",
                 })}
               >
-                {new Date().toDateString()}
+                {datetime?.toDateString()}
               </Text>
             </Box>
             <Divider w={"20rem"} mt={".75rem"} />
@@ -388,7 +413,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                   borderRadius: "5px",
                 })}
               >
-                6:30PM
+                {showtime?.toUpperCase()}
               </Text>
             </Box>
             <Divider w={"20rem"} mt={".75rem"} />
@@ -397,28 +422,20 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                 Seats
               </Text>
               <Group spacing={"xs"}>
-                <Text
-                  tt={"uppercase"}
-                  px={".75rem"}
-                  sx={(theme) => ({
-                    color: theme.colors.blue[6],
-                    border: `1px solid ${theme.colors.blue[6]}`,
-                    borderRadius: "5px",
-                  })}
-                >
-                  B6
-                </Text>
-                <Text
-                  tt={"uppercase"}
-                  px={".75rem"}
-                  sx={(theme) => ({
-                    color: theme.colors.blue[6],
-                    border: `1px solid ${theme.colors.blue[6]}`,
-                    borderRadius: "5px",
-                  })}
-                >
-                  B7
-                </Text>
+                {selectedSeats.map((seat) => (
+                  <Text
+                    key={seat.id}
+                    tt={"uppercase"}
+                    px={".75rem"}
+                    sx={(theme) => ({
+                      color: theme.colors.blue[6],
+                      border: `1px solid ${theme.colors.blue[6]}`,
+                      borderRadius: "5px",
+                    })}
+                  >
+                    {seat.row + seat.column}
+                  </Text>
+                ))}
               </Group>
             </Box>
             <Divider w={"20rem"} mt={".75rem"} />
@@ -435,7 +452,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                   borderRadius: "5px",
                 })}
               >
-                PREMIUM
+                {bundle ? bundle : "NO BUNDLE"}
               </Text>
             </Box>
             <Divider w={"20rem"} mt={".75rem"} />
@@ -446,9 +463,23 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
         <Button variant="default" onClick={prevStep}>
           Back
         </Button>
-        {active < 3 && <Button onClick={nextStep}>Next step</Button>}
+        {active < 2 && <Button onClick={nextStep}>Next step</Button>}
+        {active === 2 && bundle && (
+          <Button onClick={nextStep}>Next step</Button>
+        )}
+        {active === 2 && !bundle && <Button onClick={nextStep}>Skip</Button>}
         {active === 3 && (
-          <Button onClick={() => console.log("purchase!")}>
+          <Button
+            onClick={() =>
+              console.log({
+                datetime,
+                showtime,
+                seatQuantity,
+                selectedSeats,
+                bundle,
+              })
+            }
+          >
             Go to payment
           </Button>
         )}
@@ -587,7 +618,7 @@ const SeatOption: React.FC<{
   const [isSelected, setIsSelected] = useState(false);
 
   const handleClick = () => {
-    if (seatQuantity === selectedSeats.length) return;
+    if (seatQuantity === selectedSeats.length && !isSelected) return;
     if (!selectedRow) {
       setSelectedRow(seat.row);
     }
@@ -609,6 +640,7 @@ const SeatOption: React.FC<{
       setSelectedSeats((prev) => [...prev, seat]);
     } else {
       setSelectedSeats((prev) => prev.filter((old) => old.id !== seat.id));
+      setIsSelected(!isSelected);
     }
     setIsSelected(!isSelected);
   };

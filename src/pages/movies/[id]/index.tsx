@@ -1,3 +1,4 @@
+import axios from "axios";
 import { Box, Flex, Image, SimpleGrid, Text, Title, rem } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import type { GetServerSidePropsContext, NextPage } from "next";
@@ -12,11 +13,10 @@ const toHoursAndMinutes = (totalMinutes: number) => {
 };
 
 const fetchMovie = async (id: string) => {
-  const res: Response = await fetch(
+  const { data } = await axios.get<IMovie>(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/movie/${id}?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
-  const json: IMovie = await res.json();
-  return json;
+  return data;
 };
 
 const MoviePage: NextPage<{ id: string }> = ({ id }) => {

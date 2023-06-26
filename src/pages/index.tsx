@@ -1,5 +1,6 @@
 import { Divider, LoadingOverlay } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
 import { type NextPage } from "next";
 import MovieCarousel from "~/componens/MovieCarousel";
 import MovieList from "~/componens/MovieList";
@@ -7,11 +8,10 @@ import { env } from "~/env.mjs";
 import type { IMoviesJson, Result } from "~/types";
 
 const fetchMovies = async (limit: number) => {
-  const res: Response = await fetch(
+  const { data } = await axios.get<IMoviesJson>(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/trending/movie/day?api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
-  const json: IMoviesJson = await res.json();
-  return json.results.slice(0, limit);
+  return data.results.slice(0, limit);
 };
 
 const Home: NextPage = () => {
