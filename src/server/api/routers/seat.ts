@@ -13,6 +13,9 @@ export const seatRouter = createTRPCRouter({
         where: {
           screenId: input.screenId,
         },
+        orderBy: {
+          id: "asc",
+        },
       });
     }),
 });

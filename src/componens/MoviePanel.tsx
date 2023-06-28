@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Image, Text, Transition, rem } from "@mantine/core";
+import { Box, Button, Flex, Image, Text, Transition } from "@mantine/core";
 import type { IDiscoverResult, ISearchResult, Result } from "~/types";
 import { useHover } from "@mantine/hooks";
 import { IconPhotoOff, IconStarFilled } from "@tabler/icons-react";

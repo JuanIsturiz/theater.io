@@ -18,30 +18,30 @@ export const paymentRouter = createTRPCRouter({
           seats: z.array(z.string()),
           date: z.date(),
           showtime: z.string(),
-          bundle: z.enum(["BASIC", "PREMIUM", "VIP"]).nullable(),
+          bundle: z.enum(["BASIC", "PREMIUM", "VIP"]).optional(),
           movieId: z.string(),
         }),
       })
     )
     .mutation(async ({ input, ctx }) => {
       // ticket stuff
-      // const ticket = await ctx.prisma.ticket.create({
-      //   data: {
-      //     userId: input.ticket.userId,
-      //     date: input.ticket.date,
-      //     showtime: input.ticket.showtime,
-      //     bundle: input.ticket.bundle,
-      //     movieId: input.ticket.movieId,
-      //   },
-      // });
-      // await ctx.prisma.seat.updateMany({
-      //   where: {
-      //     id: { in: input.ticket.seats },
-      //   },
-      //   data: {
-      //     userId: input.ticket.userId,
-      //   },
-      // });
+      const ticket = await ctx.prisma.ticket.create({
+        data: {
+          userId: input.ticket.userId,
+          date: input.ticket.date,
+          showtime: input.ticket.showtime,
+          bundle: input.ticket.bundle,
+          movieId: input.ticket.movieId,
+        },
+      });
+      await ctx.prisma.seat.updateMany({
+        where: {
+          id: { in: input.ticket.seats },
+        },
+        data: {
+          userId: input.ticket.userId,
+        },
+      });
 
       // stripe stuff
       let bundlePriceId: string | null;
@@ -76,13 +76,21 @@ export const paymentRouter = createTRPCRouter({
               quantity: input.quantity,
             },
           ];
-      //&ticket_id=${ticket.id}
+
       return stripe.checkout.sessions.create({
         mode: "payment",
         payment_method_types: ["card", "us_bank_account"],
         line_items,
-        success_url: `${getURL()}/success?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${getURL()}/reserve?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${getURL()}/payment/success?session_id={CHECKOUT_SESSION_ID}&ticket_id=${
+          ticket.id
+        }`,
+        cancel_url: `${getURL()}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&ticket_id=${
+          ticket.id
+        }`,
       });
     }),
+  // todo ↓
+  // confirmPayment: publicProcedure
+  //   .input(z.object({ ticketId: z.string() }))
+  //   .mutation(async ({ ctx, input }) => {}),
 });

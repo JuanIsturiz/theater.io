@@ -20,6 +20,7 @@ import {
 import { DatePicker } from "@mantine/dates";
 import { IconArmchair, IconMovie } from "@tabler/icons-react";
 import { type RouterOutputs, api } from "~/utils/api";
+import { getStripe } from "~/lib/stripeClient";
 
 type Screen = RouterOutputs["screen"]["getAll"][number];
 type Seat = RouterOutputs["seat"]["getByScreen"][number];
@@ -29,6 +30,7 @@ interface SeatByGroup extends Seat {
 }
 
 interface NewTicketWizardProps {
+  userId: string;
   movie:
     | {
         title: string;
@@ -71,10 +73,8 @@ const placeSeats = (seats: Seat[]) => {
   return room;
 };
 
-//todo add animations and unavailable seats feedback
-//todo add stripe stuff
-
 const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
+  userId,
   movie,
   disclosure,
 }) => {
@@ -96,10 +96,13 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
     (screen) => screen.date.getTime() === datetime?.getTime() && !screen.isFull
   );
   const [showtime, setShowtime] = useState<string | null>(null);
-  const [bundle, setBundle] = useState<string | null>(null);
+  const [bundle, setBundle] = useState<"BASIC" | "PREMIUM" | "VIP" | null>(
+    null
+  );
   const [screen, setScreen] = useState<Screen | undefined>();
   const [seatQuantity, setSeatQuantity] = useState<number | "">();
   const [selectedSeats, setSelectedSeats] = useState<Array<SeatByGroup>>([]);
+  const [room, setRoom] = useState<string | null>();
 
   const handleClose = () => {
     setShowtime(null);
@@ -107,9 +110,21 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
     setSeatQuantity("");
     setSelectedSeats([]);
     setScreen(undefined);
+    setRoom(null);
     setBundle(null);
     setActive(0);
     close();
+  };
+
+  const handleDatetimeChange = (val: Date | null) => {
+    if (screen || showtime) {
+      setShowtime(null);
+      setScreen(undefined);
+      setRoom(null);
+      setSeatQuantity("");
+      setSelectedSeats([]);
+    }
+    setDatetime(val);
   };
 
   const {
@@ -123,6 +138,65 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
   );
 
   const availableSeats = seats?.filter((seat) => !seat.userId).length || 0;
+
+  const {
+    mutate: checkoutMutation,
+    // isLoading
+  } = api.payment.checkout.useMutation({
+    async onSuccess(data) {
+      const stripe = await getStripe();
+
+      const stripeRes = await stripe?.redirectToCheckout({
+        sessionId: data?.id ?? "",
+      });
+      console.log(stripeRes?.error);
+    },
+  });
+
+  const handleNextDisabled = () => {
+    if (active === 0 && !seatQuantity) {
+      return true;
+    } else if (active === 1 && selectedSeats.length !== seatQuantity) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+
+  const nextDisabled = handleNextDisabled();
+
+  const handlePayment = () => {
+    if (!datetime || !showtime || !seatQuantity || !selectedSeats || !bundle)
+      return;
+    checkoutMutation({
+      quantity: Number(seatQuantity),
+      ticket: {
+        date: datetime,
+        bundle: bundle || undefined,
+        movieId: movie?.id ?? "",
+        seats: selectedSeats.map((seat) => seat.id),
+        showtime,
+        userId,
+      },
+    });
+  };
+
+  const getTotal = (
+    seatQty: number | string | undefined,
+    bundle: "BASIC" | "PREMIUM" | "VIP" | null
+  ) => {
+    if (!seatQty) {
+      return null;
+    } else if (!bundle) {
+      return (Number(seatQty) * 4).toFixed(2);
+    } else {
+      const bundlePrice =
+        bundle === "BASIC" ? 5 : bundle === "PREMIUM" ? 10 : 15;
+      return (Number(seatQty) * 4 + bundlePrice).toFixed(2);
+    }
+  };
+
+  const total = getTotal(seatQuantity, bundle);
   return (
     <Modal
       opened={opened}
@@ -146,7 +220,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
               <Group>
                 <DatePicker
                   value={datetime}
-                  onChange={setDatetime}
+                  onChange={handleDatetimeChange}
                   excludeDate={(date) => {
                     return !availableDates?.some(
                       (avDate) => avDate.getTime() === date.getTime()
@@ -157,6 +231,22 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
             </Box>
             <Box>
               <Box sx={{ textAlign: "center" }} mb={"xl"}>
+                {!datetime && (
+                  <Radio.Group
+                    value={"0"}
+                    onChange={setShowtime}
+                    name="showtime"
+                    label="Select your desired showtime"
+                    description="Only available option will be on display"
+                  >
+                    <Flex gap={"sm"} mt={"sm"}>
+                      <Radio disabled value={"0"} label="1:30pm" />
+                      <Radio disabled value={"1"} label="4:00pm" />
+                      <Radio disabled value={"2"} label="6:30pm" />
+                      <Radio disabled value={"3"} label="9:00pm" />
+                    </Flex>
+                  </Radio.Group>
+                )}
                 {datetime && (
                   <Radio.Group
                     value={showtime || ""}
@@ -176,11 +266,11 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                             value={showtime}
                             label={showtime}
                             onClick={() => {
-                              setScreen(
-                                screensByDate?.find(
-                                  (screen) => screen.showtime === showtime
-                                )
+                              const screen = screensByDate?.find(
+                                (screen) => screen.showtime === showtime
                               );
+                              setScreen(screen);
+                              setRoom(screen?.room?.name);
                             }}
                           />
                         ))}
@@ -189,6 +279,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                 )}
               </Box>
               <NumberInput
+                disabled={!seats}
                 value={seatQuantity}
                 onChange={setSeatQuantity}
                 mb={rem(2.5)}
@@ -358,7 +449,6 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                 <Text py={".25rem"}>Delivery</Text>
                 <Divider />
               </Card.Section>
-              {/* bottom, right, left margins are negative – -1 * theme.spacing.xl */}
               <Card.Section>
                 <Button
                   tt={"uppercase"}
@@ -381,108 +471,149 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
             <Title align="center" weight={"normal"}>
               Ticket Summary
             </Title>
-            <Divider w={"20rem"} mt={".75rem"} />
-            <Box sx={{ textAlign: "center" }}>
-              <Text size={"xl"} color="dimmed">
-                Date
-              </Text>
-              <Text
-                tt={"uppercase"}
-                px={".75rem"}
-                sx={(theme) => ({
-                  color: theme.colors.violet[5],
-                  border: `1px solid ${theme.colors.violet[5]}`,
-                  borderRadius: "5px",
-                })}
+            <Divider w={"28rem"} mt={".75rem"} />
+            <Flex justify={"center"} gap={"sm"}>
+              <Box
+                sx={{ textAlign: "center", flex: "1 1 0px", width: rem(200) }}
               >
-                {datetime?.toDateString()}
-              </Text>
-            </Box>
-            <Divider w={"20rem"} mt={".75rem"} />
-            <Box>
-              <Text size={"xl"} color="dimmed">
-                Showtime
-              </Text>
-              <Text
-                align="center"
-                tt={"uppercase"}
-                px={".75rem"}
-                sx={(theme) => ({
-                  color: theme.colors.teal[7],
-                  border: `1px solid ${theme.colors.teal[7]}`,
-                  borderRadius: "5px",
-                })}
+                <Text size={"xl"} color="dimmed">
+                  Date
+                </Text>
+                <Text
+                  tt={"uppercase"}
+                  px={".75rem"}
+                  sx={(theme) => ({
+                    color: theme.colors.blue[6],
+                    border: `1px solid ${theme.colors.blue[6]}`,
+                    borderRadius: "5px",
+                  })}
+                >
+                  {datetime?.toDateString()}
+                </Text>
+              </Box>
+              <Divider h={rem(70)} orientation="vertical" />
+              <Box
+                sx={{ textAlign: "center", flex: "1 1 0px", width: rem(200) }}
               >
-                {showtime?.toUpperCase()}
-              </Text>
-            </Box>
-            <Divider w={"20rem"} mt={".75rem"} />
-            <Box sx={{ textAlign: "center" }}>
-              <Text size={"xl"} color="dimmed">
-                Seats
-              </Text>
-              <Group spacing={"xs"}>
-                {selectedSeats.map((seat) => (
-                  <Text
-                    key={seat.id}
-                    tt={"uppercase"}
-                    px={".75rem"}
-                    sx={(theme) => ({
-                      color: theme.colors.blue[6],
-                      border: `1px solid ${theme.colors.blue[6]}`,
-                      borderRadius: "5px",
-                    })}
-                  >
-                    {seat.row + seat.column}
-                  </Text>
-                ))}
-              </Group>
-            </Box>
-            <Divider w={"20rem"} mt={".75rem"} />
-            <Box sx={{ textAlign: "center" }}>
-              <Text size={"xl"} color="dimmed">
-                Bundle
-              </Text>
-              <Text
-                tt={"uppercase"}
-                px={".75rem"}
-                sx={(theme) => ({
-                  color: theme.colors.yellow[6],
-                  border: `1px solid ${theme.colors.yellow[6]}`,
-                  borderRadius: "5px",
-                })}
+                <Text size={"xl"} color="dimmed">
+                  Showtime
+                </Text>
+                <Text
+                  align="center"
+                  tt={"uppercase"}
+                  px={".75rem"}
+                  sx={(theme) => ({
+                    color: theme.colors.blue[6],
+                    border: `1px solid ${theme.colors.blue[6]}`,
+                    borderRadius: "5px",
+                  })}
+                >
+                  {showtime?.toUpperCase()}
+                </Text>
+              </Box>
+            </Flex>
+            <Divider w={"28rem"} />
+            <Flex justify={"center"} gap={"sm"}>
+              <Box
+                sx={{ textAlign: "center", flex: "1 1 0px", width: rem(200) }}
               >
-                {bundle ? bundle : "NO BUNDLE"}
-              </Text>
-            </Box>
-            <Divider w={"20rem"} mt={".75rem"} />
+                <Text size={"xl"} color="dimmed">
+                  Seats
+                </Text>
+                <Group spacing={"xs"} position={"center"}>
+                  {selectedSeats.map((seat) => (
+                    <Text
+                      key={seat.id}
+                      tt={"uppercase"}
+                      px={".75rem"}
+                      sx={(theme) => ({
+                        color: theme.colors.blue[6],
+                        border: `1px solid ${theme.colors.blue[6]}`,
+                        borderRadius: "5px",
+                      })}
+                    >
+                      {`${seat.row}${seat.column}`}
+                    </Text>
+                  ))}
+                </Group>
+              </Box>
+              <Divider h={rem(70)} orientation="vertical" />
+              <Box
+                sx={{ textAlign: "center", flex: "1 1 0px", width: rem(200) }}
+              >
+                <Text size={"xl"} color="dimmed">
+                  Bundle
+                </Text>
+                <Text
+                  tt={"uppercase"}
+                  px={".75rem"}
+                  sx={(theme) => ({
+                    color: theme.colors.blue[6],
+                    border: `1px solid ${theme.colors.blue[6]}`,
+                    borderRadius: "5px",
+                  })}
+                >
+                  {bundle ? bundle : "NO BUNDLE"}
+                </Text>
+              </Box>
+            </Flex>
+            <Divider w={"28rem"} />
+            <Flex justify={"center"} gap={"sm"}>
+              <Box sx={{ textAlign: "center", width: rem(200) }}>
+                <Text size={"xl"} color="dimmed">
+                  Room
+                </Text>
+                <Text
+                  tt={"uppercase"}
+                  px={".75rem"}
+                  sx={(theme) => ({
+                    color: theme.colors.blue[6],
+                    border: `1px solid ${theme.colors.blue[6]}`,
+                    borderRadius: "5px",
+                  })}
+                >
+                  {room?.replace("_", " ").toUpperCase()}
+                </Text>
+              </Box>
+              <Divider h={rem(70)} orientation="vertical" />
+
+              <Box sx={{ textAlign: "center", width: rem(200) }}>
+                <Text size={"xl"} color="dimmed">
+                  Total
+                </Text>
+                <Text
+                  tt={"uppercase"}
+                  px={".75rem"}
+                  sx={(theme) => ({
+                    color: theme.colors.blue[6],
+                    border: `1px solid ${theme.colors.blue[6]}`,
+                    borderRadius: "5px",
+                  })}
+                >
+                  ${total}
+                </Text>
+              </Box>
+            </Flex>
+            <Divider w={"28rem"} />
           </Center>
         </Stepper.Completed>
       </Stepper>
       <Group position="center" mt="xl">
-        <Button variant="default" onClick={prevStep}>
-          Back
-        </Button>
-        {active < 2 && <Button onClick={nextStep}>Next step</Button>}
+        {active > 0 && (
+          <Button variant="default" onClick={prevStep}>
+            Back
+          </Button>
+        )}
+        {active < 2 && (
+          <Button onClick={nextStep} disabled={nextDisabled}>
+            Next step
+          </Button>
+        )}
         {active === 2 && bundle && (
           <Button onClick={nextStep}>Next step</Button>
         )}
         {active === 2 && !bundle && <Button onClick={nextStep}>Skip</Button>}
-        {active === 3 && (
-          <Button
-            onClick={() =>
-              console.log({
-                datetime,
-                showtime,
-                seatQuantity,
-                selectedSeats,
-                bundle,
-              })
-            }
-          >
-            Go to payment
-          </Button>
-        )}
+        {active === 3 && <Button onClick={handlePayment}>Go to payment</Button>}
       </Group>
     </Modal>
   );
@@ -649,6 +780,7 @@ const SeatOption: React.FC<{
     <Center>
       {seat.column}
       <ActionIcon
+        disabled={!!seat.userId}
         ml={rem(2)}
         sx={(theme) => ({
           color: isSelected ? theme.colors.blue : theme.colors.white,

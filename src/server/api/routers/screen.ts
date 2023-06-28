@@ -20,6 +20,9 @@ export const screenRouter = createTRPCRouter({
         where: {
           movieId: input.movieId,
         },
+        include: {
+          room: true,
+        },
       });
     }),
 });

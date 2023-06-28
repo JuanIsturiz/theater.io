@@ -18,6 +18,7 @@ import NewTicketWizard from "~/componens/NewTicketWizard";
 import { env } from "~/env.mjs";
 import type { IMovie } from "~/types";
 import { type RouterOutputs, api } from "~/utils/api";
+import { useUser } from "@clerk/nextjs";
 
 type Movie = RouterOutputs["movie"]["getAll"][number];
 type Screen = RouterOutputs["screen"]["getAll"][number];
@@ -47,6 +48,8 @@ const fetchMovies = async (movies: Movie[] | undefined) => {
 };
 
 const Reserve: NextPage = () => {
+  const user = useUser();
+
   const tmdbImagePath = "https://image.tmdb.org/t/p/original";
 
   const [selectedMovie, setSelectedMovie] = useState<
@@ -70,7 +73,11 @@ const Reserve: NextPage = () => {
         minHeight: "42.6vh",
       }}
     >
-      <NewTicketWizard movie={selectedMovie} disclosure={disclosure} />
+      <NewTicketWizard
+        userId={user.user?.id ?? ""}
+        movie={selectedMovie}
+        disclosure={disclosure}
+      />
       <Title tt={"uppercase"} align="center" weight={"normal"}>
         On theaters
       </Title>
