@@ -27,6 +27,7 @@ model Room {
     id      String   @id @default(cuid())
     name    String
     screens Screen[]
+    tickets Ticket[]
 }
 
 model Screen {
@@ -63,6 +64,8 @@ model Ticket {
     verified  Boolean  @default(false)
     movie     Movie    @relation(fields: [movieId], references: [id])
     movieId   String
+    room      Room     @relation(fields: [roomId], references: [id])
+    roomId    String
 }
 
 enum Bundle {

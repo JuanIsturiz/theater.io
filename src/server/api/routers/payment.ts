@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import Stripe from "stripe";
 import { z } from "zod";
 import { env } from "~/env.mjs";
@@ -20,6 +21,7 @@ export const paymentRouter = createTRPCRouter({
           showtime: z.string(),
           bundle: z.enum(["BASIC", "PREMIUM", "VIP"]).optional(),
           movieId: z.string(),
+          roomId: z.string(),
         }),
       })
     )
@@ -32,8 +34,21 @@ export const paymentRouter = createTRPCRouter({
           showtime: input.ticket.showtime,
           bundle: input.ticket.bundle,
           movieId: input.ticket.movieId,
+          roomId: input.ticket.roomId,
         },
       });
+
+      await ctx.prisma.ticket.update({
+        where: {
+          id: ticket.id,
+        },
+        data: {
+          seats: {
+            connect: input.ticket.seats.map((seat) => ({ id: seat })),
+          },
+        },
+      });
+
       await ctx.prisma.seat.updateMany({
         where: {
           id: { in: input.ticket.seats },
@@ -89,8 +104,39 @@ export const paymentRouter = createTRPCRouter({
         }`,
       });
     }),
-  // todo ↓
-  // confirmPayment: publicProcedure
-  //   .input(z.object({ ticketId: z.string() }))
-  //   .mutation(async ({ ctx, input }) => {}),
+  confirmPayment: publicProcedure
+    .input(z.object({ sessionId: z.string(), ticketId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const ticket = await ctx.prisma.ticket.findUnique({
+        where: {
+          id: input.ticketId,
+        },
+        include: {
+          seats: true,
+          movie: true,
+          room: true,
+        },
+      });
+      if (!ticket) throw new TRPCError({ code: "BAD_REQUEST" });
+      if (ticket?.verified) {
+        return { status: "already verified", ticket };
+      } else {
+        const session = await stripe.checkout.sessions.retrieve(
+          input.sessionId
+        );
+        if (session.status === "complete") {
+          await ctx.prisma.ticket.update({
+            where: {
+              id: ticket.id,
+            },
+            data: {
+              verified: true,
+            },
+          });
+          return { status: "verified", ticket };
+        } else {
+          throw new TRPCError({ code: "BAD_REQUEST" });
+        }
+      }
+    }),
 });

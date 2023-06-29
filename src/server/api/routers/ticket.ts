@@ -13,6 +13,11 @@ export const ticketRouter = createTRPCRouter({
         where: {
           userId: input.userId,
         },
+        include: {
+          movie: true,
+          seats: true,
+          room: true,
+        },
       });
     }),
 });

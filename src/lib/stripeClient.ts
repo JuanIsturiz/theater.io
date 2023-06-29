@@ -1,7 +1,7 @@
 import { loadStripe, type Stripe } from "@stripe/stripe-js";
 import { env } from "~/env.mjs";
 
-let stripePromise: Promise<Stripe | null>;
+let stripePromise: undefined | Promise<Stripe | null>;
 
 export const getStripe = () => {
   if (!stripePromise) {

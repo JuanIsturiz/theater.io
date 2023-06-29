@@ -21,10 +21,11 @@ import { DatePicker } from "@mantine/dates";
 import { IconArmchair, IconMovie } from "@tabler/icons-react";
 import { type RouterOutputs, api } from "~/utils/api";
 import { getStripe } from "~/lib/stripeClient";
+import type * as Prisma from "@prisma/client";
 
 type Screen = RouterOutputs["screen"]["getAll"][number];
 type Seat = RouterOutputs["seat"]["getByScreen"][number];
-
+type RoomSchema = Prisma.Room;
 interface SeatByGroup extends Seat {
   group: string;
 }
@@ -102,7 +103,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
   const [screen, setScreen] = useState<Screen | undefined>();
   const [seatQuantity, setSeatQuantity] = useState<number | "">();
   const [selectedSeats, setSelectedSeats] = useState<Array<SeatByGroup>>([]);
-  const [room, setRoom] = useState<string | null>();
+  const [room, setRoom] = useState<RoomSchema | null>();
 
   const handleClose = () => {
     setShowtime(null);
@@ -177,6 +178,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
         seats: selectedSeats.map((seat) => seat.id),
         showtime,
         userId,
+        roomId: room?.id ?? "",
       },
     });
   };
@@ -270,7 +272,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                                 (screen) => screen.showtime === showtime
                               );
                               setScreen(screen);
-                              setRoom(screen?.room?.name);
+                              setRoom(screen?.room);
                             }}
                           />
                         ))}
@@ -572,7 +574,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                     borderRadius: "5px",
                   })}
                 >
-                  {room?.replace("_", " ").toUpperCase()}
+                  {room?.name?.replace("_", " ").toUpperCase()}
                 </Text>
               </Box>
               <Divider h={rem(70)} orientation="vertical" />

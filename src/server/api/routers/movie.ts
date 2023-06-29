@@ -6,11 +6,7 @@ export const movieRouter = createTRPCRouter({
       include: {
         screens: {
           include: {
-            room: {
-              select: {
-                name: true,
-              },
-            },
+            room: true,
           },
         },
       },
