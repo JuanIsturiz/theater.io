@@ -1,36 +1,46 @@
-import { Anchor, Box, Center, Table, Text, Title } from "@mantine/core";
-import { IconTicketOff } from "@tabler/icons-react";
+import type { UserResource } from "@clerk/types";
+import { useUser } from "@clerk/nextjs";
+import {
+  ActionIcon,
+  Anchor,
+  Box,
+  Button,
+  Center,
+  Group,
+  Loader,
+  Modal,
+  Table,
+  Text,
+  Title,
+  rem,
+} from "@mantine/core";
+import { PDFDownloadLink } from "@react-pdf/renderer";
+import { IconDownload, IconTicketOff, IconTrash } from "@tabler/icons-react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
+import TicketPDF from "~/componens/TicketPDF";
+import { RouterOutputs, api } from "~/utils/api";
+import QRCode from "qrcode";
+import { getURL } from "~/lib/helpers";
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { IMovie } from "~/types";
+import { env } from "~/env.mjs";
+import { useQuery } from "@tanstack/react-query";
+import { useDisclosure } from "@mantine/hooks";
+
+type Ticket = RouterOutputs["ticket"]["getByUserId"][number];
 
 const Tickets: NextPage = () => {
   const router = useRouter();
-  const tickets: ITicket[] = [
+  const user = useUser();
+
+  const { data: tickets, isLoading } = api.ticket.getByUserId.useQuery(
+    { userId: user.user?.id ?? "" },
     {
-      id: "01",
-      date: new Date(1686715200000),
-      showtime: "6:30PM",
-      seats: ["B6", "B7"],
-      bundle: Bundle.PREMIUM,
-      createdAt: new Date(),
-    },
-    {
-      id: "02",
-      date: new Date(1686888000000),
-      showtime: "9:00PM",
-      seats: ["D2", "D3"],
-      bundle: Bundle.VIP,
-      createdAt: new Date(),
-    },
-    {
-      id: "03",
-      date: new Date(1686974400000),
-      showtime: "4:00PM",
-      seats: ["B6"],
-      bundle: Bundle.BASIC,
-      createdAt: new Date(),
-    },
-  ];
+      enabled: !!user.user,
+    }
+  );
 
   return (
     <main>
@@ -40,7 +50,7 @@ const Tickets: NextPage = () => {
       <Text align="center" mb={"1rem"} opacity={0.6}>
         User tickets listed below
       </Text>
-      {!tickets.length && (
+      {!tickets?.length && (
         <Box sx={{ textAlign: "center" }}>
           <Center mb={".25rem"}>
             <Title weight={"normal"} mr={".25rem"}>
@@ -54,51 +64,161 @@ const Tickets: NextPage = () => {
           </Text>
         </Box>
       )}
-      {tickets.length && <TicketTable tickets={tickets} />}
+      {tickets?.length && <TicketTable tickets={tickets} user={user.user} />}
     </main>
   );
 };
 
-interface ITicket {
-  id: string;
-  date: Date;
-  showtime: string;
-  seats: Array<string>;
-  bundle: Bundle;
-  createdAt: Date;
-}
-
-enum Bundle {
-  BASIC = "BASIC",
-  PREMIUM = "PREMIUM",
-  VIP = "VIP",
-}
-
-const TicketTable: React.FC<{ tickets: ITicket[] }> = ({ tickets }) => {
-  const rows = tickets.map((ticket) => (
-    <tr key={ticket.id}>
-      <td>{ticket.id}</td>
-      <td>{ticket.date.toDateString()}</td>
-      <td>{ticket.showtime}</td>
-      <td>{ticket.seats.join(" - ")}</td>
-      <td>{ticket.bundle}</td>
-      <td>{ticket.createdAt.toDateString()}</td>
-    </tr>
-  ));
+const TicketTable: React.FC<{
+  tickets: Ticket[];
+  user: UserResource | null | undefined;
+}> = ({ tickets, user }) => {
   return (
-    <Table horizontalSpacing={"xl"} fontSize={"lg"} striped highlightOnHover>
+    <Table fontSize={"sm"} striped highlightOnHover>
       <thead>
         <tr>
           <th>Ticket ID</th>
+          <th>Movie</th>
           <th>Date</th>
           <th>Showtime</th>
           <th>Seats</th>
           <th>Bundle</th>
           <th>Created At</th>
+          <th></th>
+          <th></th>
         </tr>
       </thead>
-      <tbody>{rows}</tbody>
+      <tbody>
+        {tickets.map((t) => (
+          <TicketRow key={t.id} ticket={t} user={user} />
+        ))}
+      </tbody>
     </Table>
   );
 };
+
+const fetchMovie = async (id: string) => {
+  const { data } = await axios.get<IMovie>(
+    `${env.NEXT_PUBLIC_TMDB_BASE_URL}/movie/${id}`,
+    {
+      params: {
+        api_key: env.NEXT_PUBLIC_TMDB_API_KEY,
+      },
+    }
+  );
+  return data;
+};
+
+const TicketRow: React.FC<{
+  ticket: Ticket;
+  user: UserResource | null | undefined;
+}> = ({ ticket, user }) => {
+  const [src, setSrc] = useState<string>("");
+  const [opened, { open, close }] = useDisclosure(false);
+
+  useEffect(() => {
+    const setQRString = async () => {
+      const srcString = await QRCode.toDataURL(
+        `${getURL()}/ticket/${ticket.id}`
+      );
+      setSrc(srcString);
+    };
+    setQRString()
+      .then(() => {
+        console.log("QRCode Generated Successfully!");
+      })
+      .catch(() => {
+        console.log("Error Generating QRCode!");
+      });
+  }, [ticket]);
+
+  const { data: movie } = useQuery<IMovie>({
+    queryKey: ["movie", ticket.movie.imdbId],
+    queryFn: () => fetchMovie(ticket.movie.imdbId),
+    enabled: !!ticket.movie.imdbId,
+  });
+
+  const ctx = api.useContext();
+  const { mutate: deleteTicketMutation, isLoading } =
+    api.payment.cancelPayment.useMutation({
+      onSuccess() {
+        close();
+        ctx.ticket.getByUserId.invalidate({ userId: user?.id ?? "" });
+      },
+      onError() {
+        close();
+      },
+    });
+
+  const handleDelete = () => {
+    open();
+  };
+
+  const handleDeleteTicket = () => {
+    deleteTicketMutation({ ticketId: ticket.id });
+  };
+
+  return (
+    <tr>
+      <Modal
+        opened={opened}
+        onClose={close}
+        title="Warning!"
+        transitionProps={{ transition: "rotate-left" }}
+      >
+        <Text mb={rem(10)}>Are you sure you want to delete this ticket?</Text>
+        <Group position="right">
+          <Button color="red" onClick={handleDeleteTicket} disabled={isLoading}>
+            Delete
+          </Button>
+          <Button color="dark" onClick={close}>
+            Cancel
+          </Button>
+        </Group>
+      </Modal>
+      <td>{ticket.id}</td>
+      <td>{ticket.movie.name}</td>
+      <td>{ticket.date.toLocaleDateString()}</td>
+      <td>{ticket.showtime.toUpperCase()}</td>
+      <td>
+        {ticket.seats
+          .map((s) => `${s.row}${s.column}`.toUpperCase())
+          .join(" - ")}
+      </td>
+      <td>{ticket.bundle}</td>
+      <td>{ticket.createdAt.toLocaleDateString()}</td>
+      <td>
+        {movie && (
+          <PDFDownloadLink
+            document={
+              <TicketPDF
+                ticket={ticket}
+                QRSource={src}
+                user={user}
+                movie={movie}
+              />
+            }
+            fileName={`Ticket_${ticket.id ?? ""}`}
+          >
+            {({ loading }) =>
+              loading ? (
+                <Loader />
+              ) : (
+                <ActionIcon>
+                  <IconDownload />
+                </ActionIcon>
+              )
+            }
+          </PDFDownloadLink>
+        )}
+      </td>
+      <td>
+        <ActionIcon onClick={handleDelete}>
+          <IconTrash />
+        </ActionIcon>
+      </td>
+    </tr>
+  );
+};
+
 export default Tickets;

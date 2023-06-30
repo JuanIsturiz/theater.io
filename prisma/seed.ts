@@ -20,15 +20,15 @@ function getSeats(screenId: string) {
 
 async function seed() {
   // initial imdbIds
-  const imdbIds = [
-    "697843",
-    "298618",
-    "385687",
-    "812225",
-    "882569",
-    "545609",
-    "717930",
-    "569094",
+  const movies = [
+    { imdbId: "697843", name: "Extraction 2" },
+    { imdbId: "298618", name: "The Flash" },
+    { imdbId: "385687", name: "Fast X" },
+    { imdbId: "812225", name: "Black Clover: Sword of the Wizard King" },
+    { imdbId: "882569", name: "Guy Ritchie's The Covenant" },
+    { imdbId: "545609", name: "Extraction" },
+    { imdbId: "717930", name: "Kandahar" },
+    { imdbId: "569094", name: "Spider-Man: Across the Spider-Verse" },
   ];
 
   // initial room names
@@ -50,7 +50,7 @@ async function seed() {
   }
   // insert movies
   await prisma.movie.createMany({
-    data: imdbIds.map((i) => ({ imdbId: i })),
+    data: movies.map((movie) => movie),
   });
 
   // get movies

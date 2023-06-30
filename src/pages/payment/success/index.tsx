@@ -1,11 +1,9 @@
 import {
-  Box,
   Button,
   Card,
   Center,
   Divider,
   Group,
-  Image,
   Loader,
   LoadingOverlay,
   Stack,
@@ -19,22 +17,16 @@ import { type RouterOutputs, api } from "~/utils/api";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
 import { getURL } from "~/lib/helpers";
-import { PDFDownloadLink, pdf } from "@react-pdf/renderer";
+import { PDFDownloadLink } from "@react-pdf/renderer";
 import TicketPDF from "~/componens/TicketPDF";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import type { IMovie } from "~/types";
 import { env } from "~/env.mjs";
 import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 
 type Ticket = RouterOutputs["ticket"]["getByUserId"][number];
-
-// hours converter helper
-const toHoursAndMinutes = (totalMinutes: number) => {
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-  return `${hours}h ${minutes}m`;
-};
 
 const fetchMovie = async (id: string) => {
   const { data } = await axios.get<IMovie>(
@@ -54,15 +46,21 @@ const SuccessPage: NextPage = () => {
 
   const { mutate: confirmPaymentMutation, isLoading } =
     api.payment.confirmPayment.useMutation({
-      onSuccess(data) {
+      async onSuccess(data) {
         if (data.status === "verified") {
-          QRCode.toDataURL(`${getURL()}/ticket/${data.ticket}`).then(setSrc);
+          const srcString = await QRCode.toDataURL(
+            `${getURL()}/ticket/${data.ticket.id}`
+          );
+          setSrc(srcString);
           setMessage("Ticket verified successfully!");
           setPdfTicket(data.ticket);
           return;
         }
         if (data.status === "already verified") {
-          QRCode.toDataURL(`${getURL()}/ticket/${ticketId}`).then(setSrc);
+          const srcString = await QRCode.toDataURL(
+            `${getURL()}/ticket/${data.ticket.id}`
+          );
+          setSrc(srcString);
           setMessage("Ticket already verified!");
           setPdfTicket(data.ticket);
           return;
@@ -86,7 +84,7 @@ const SuccessPage: NextPage = () => {
       sessionId,
       ticketId,
     });
-  }, [sessionId, ticketId]);
+  }, [sessionId, ticketId, confirmPaymentMutation]);
 
   if ((!message && !isLoading) || !movie) return <LoadingOverlay visible />;
 
@@ -105,7 +103,6 @@ const SuccessPage: NextPage = () => {
           <Card>
             <Stack align="center">
               <Title order={2}>{message}</Title>
-              {/* {src && <Image src={src} />} */}
               <PDFDownloadLink
                 document={
                   <TicketPDF
@@ -130,7 +127,9 @@ const SuccessPage: NextPage = () => {
                 <Text>OR</Text>
                 <Divider w={rem(100)} />
               </Group>
-              <Button>Go to tickets</Button>
+              <Link href={"/tickets"}>
+                <Button>Go to tickets</Button>
+              </Link>
             </Stack>
           </Card>
         )}
