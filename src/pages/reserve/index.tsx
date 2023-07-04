@@ -5,6 +5,7 @@ import {
   Flex,
   Group,
   Image,
+  LoadingOverlay,
   Text,
   Title,
   rem,
@@ -13,12 +14,13 @@ import { useDisclosure } from "@mantine/hooks";
 import { IconStarFilled } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { type NextPage } from "next";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import NewTicketWizard from "~/componens/NewTicketWizard";
 import { env } from "~/env.mjs";
 import type { IMovie } from "~/types";
 import { type RouterOutputs, api } from "~/utils/api";
 import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/router";
 
 type Movie = RouterOutputs["movie"]["getAll"][number];
 type Screen = RouterOutputs["screen"]["getAll"][number];
@@ -49,6 +51,12 @@ const fetchMovies = async (movies: Movie[] | undefined) => {
 
 const Reserve: NextPage = () => {
   const user = useUser();
+  const router = useRouter();
+  useEffect(() => {
+    if (user.isLoaded && !user.user) {
+      router.replace("/");
+    }
+  }, []);
 
   const tmdbImagePath = "https://image.tmdb.org/t/p/original";
 
@@ -59,14 +67,13 @@ const Reserve: NextPage = () => {
   const disclosure = useDisclosure(false);
 
   const { data: movieIds } = api.movie.getAll.useQuery();
-  const {
-    data: movies,
-    // isLoading
-  } = useQuery<ICompleteMovie[] | null>({
+  const { data: movies, isLoading } = useQuery<ICompleteMovie[] | null>({
     queryKey: ["movies"],
     queryFn: () => fetchMovies(movieIds),
     enabled: !!movieIds,
   });
+
+  if (isLoading) return <LoadingOverlay visible />;
   return (
     <main
       style={{

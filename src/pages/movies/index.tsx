@@ -128,7 +128,6 @@ const Movies: NextPage = () => {
 
   const {
     data: searchData,
-    // isLoading: loadingSearch,
     isFetching: fetchingSearch,
     refetch: refetchSearch,
   } = useQuery({

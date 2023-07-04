@@ -1,10 +1,11 @@
 import { Carousel } from "@mantine/carousel";
 import { Box, Button, Group, Text, Title } from "@mantine/core";
-import type { Result } from "~/types";
+import type { IMovie } from "~/types";
 import styles from "~/styles/movies.module.css";
+import Link from "next/link";
 
 interface MovieCarouselProps {
-  movies: Result[] | undefined;
+  movies: IMovie[] | undefined;
 }
 
 const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies }) => {
@@ -24,7 +25,7 @@ const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies }) => {
   );
 };
 
-const MovieSlide: React.FC<{ movie: Result | undefined }> = ({ movie }) => {
+const MovieSlide: React.FC<{ movie: IMovie | undefined }> = ({ movie }) => {
   const tmdbImagePath = "https://image.tmdb.org/t/p/original";
 
   return (
@@ -60,23 +61,27 @@ const MovieSlide: React.FC<{ movie: Result | undefined }> = ({ movie }) => {
           {movie?.overview}
         </Text>
         <Group className={styles.movieSliceButtons}>
-          <Button
-            size="lg"
-            sx={{
-              zIndex: 10,
-            }}
-          >
-            Reserve Now
-          </Button>
-          <Button
-            size="lg"
-            variant="default"
-            sx={{
-              zIndex: 10,
-            }}
-          >
-            More Info
-          </Button>
+          <Link href={"/reserve"}>
+            <Button
+              size="lg"
+              sx={{
+                zIndex: 10,
+              }}
+            >
+              Reserve Now
+            </Button>
+          </Link>
+          <Link href={`movies/${movie?.id ?? ""}`}>
+            <Button
+              size="lg"
+              variant="default"
+              sx={{
+                zIndex: 10,
+              }}
+            >
+              More Info
+            </Button>
+          </Link>
         </Group>
       </Box>
     </Box>

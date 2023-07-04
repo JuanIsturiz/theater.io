@@ -36,6 +36,12 @@ const Tickets: NextPage = () => {
   const router = useRouter();
   const user = useUser();
 
+  useEffect(() => {
+    if (user.isLoaded && !user.user) {
+      router.replace("/");
+    }
+  }, []);
+
   const { data: tickets, isLoading } = api.ticket.getByUserId.useQuery(
     { userId: user.user?.id ?? "" },
     {
