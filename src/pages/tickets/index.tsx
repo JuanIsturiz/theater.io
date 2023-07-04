@@ -8,6 +8,7 @@ import {
   Center,
   Group,
   Loader,
+  LoadingOverlay,
   Modal,
   Table,
   Text,
@@ -19,12 +20,12 @@ import { IconDownload, IconTicketOff, IconTrash } from "@tabler/icons-react";
 import type { NextPage } from "next";
 import { useRouter } from "next/router";
 import TicketPDF from "~/componens/TicketPDF";
-import { RouterOutputs, api } from "~/utils/api";
+import { type RouterOutputs, api } from "~/utils/api";
 import QRCode from "qrcode";
 import { getURL } from "~/lib/helpers";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { IMovie } from "~/types";
+import type { IMovie } from "~/types";
 import { env } from "~/env.mjs";
 import { useQuery } from "@tanstack/react-query";
 import { useDisclosure } from "@mantine/hooks";
@@ -41,6 +42,8 @@ const Tickets: NextPage = () => {
       enabled: !!user.user,
     }
   );
+
+  if (isLoading) return <LoadingOverlay visible />;
 
   return (
     <main>
@@ -141,9 +144,9 @@ const TicketRow: React.FC<{
   const ctx = api.useContext();
   const { mutate: deleteTicketMutation, isLoading } =
     api.payment.cancelPayment.useMutation({
-      onSuccess() {
+      async onSuccess() {
         close();
-        ctx.ticket.getByUserId.invalidate({ userId: user?.id ?? "" });
+        await ctx.ticket.getByUserId.invalidate({ userId: user?.id ?? "" });
       },
       onError() {
         close();

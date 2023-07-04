@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { GetServerSidePropsContext, NextPage } from "next";
 import { env } from "~/env.mjs";
 import type { IMovie } from "~/types";
+import { IconStar, IconStarFilled } from "@tabler/icons-react";
 
 // hours converter helper
 const toHoursAndMinutes = (totalMinutes: number) => {
@@ -38,7 +39,6 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
         <Box
           p={rem(20)}
           pos={"relative"}
-          h={rem(420)}
           sx={{
             backgroundImage: `url(${tmdbImagePath + movie.backdrop_path})`,
             backgroundPosition: "center",
@@ -63,6 +63,8 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
             gap={"xl"}
           >
             <Box
+              h={rem(386)}
+              w={rem(246)}
               sx={(theme) => ({
                 borderStyle: "solid",
                 borderWidth: "3px",
@@ -98,6 +100,7 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
               <Text size={"xl"} color="white">
                 {toHoursAndMinutes(movie.runtime)}
               </Text>
+              <RatingStars voteAverage={movie.vote_average} />
               <Text size={"lg"} fs={"italic"} color="gray.4" my={rem(20)}>
                 {movie.tagline}
               </Text>
@@ -122,16 +125,40 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
             </Box>
             <Box sx={{ textAlign: "center" }}>
               <Text weight={"bold"}>Budget</Text>
-              <Text weight={500}>${movie.budget}</Text>
+              <Text weight={500}>${movie.budget.toLocaleString()}</Text>
             </Box>
             <Box sx={{ textAlign: "center" }}>
               <Text weight={"bold"}>Revenue</Text>
-              <Text weight={500}>${movie.revenue}</Text>
+              <Text weight={500}>${movie.revenue.toLocaleString()}</Text>
             </Box>
           </SimpleGrid>
         </Box>
       </Box>
     </main>
+  );
+};
+
+const RatingStars: React.FC<{ voteAverage: number }> = ({ voteAverage }) => {
+  const roundedVoteAverage = Math.round(voteAverage / 2);
+  const ratingArray = new Array(5)
+    .fill(false)
+    .map((_, idx) => (idx + 1 <= roundedVoteAverage ? true : false));
+  return (
+    <Box>
+      {ratingArray.map((rating, idx) =>
+        rating ? (
+          <IconStarFilled
+            key={idx}
+            size={rem(30)}
+            style={{
+              color: "#1C7ED6",
+            }}
+          />
+        ) : (
+          <IconStar key={idx} size={rem(30)} color="#1C7ED6" />
+        )
+      )}
+    </Box>
   );
 };
 

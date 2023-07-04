@@ -2,8 +2,11 @@ import {
   ActionIcon,
   Box,
   Button,
+  Center,
   Container,
   Flex,
+  LoadingOverlay,
+  Pagination,
   SegmentedControl,
   Select,
   SimpleGrid,
@@ -80,14 +83,16 @@ const fetchDiscoverMovies = async (query: IQuery) => {
   });
   queries += "api_key=" + env.NEXT_PUBLIC_TMDB_API_KEY;
   const { data } = await axios.get<IDiscoverJson>(queries);
-  return data.results;
+  console.log({ data });
+
+  return data;
 };
 
 const fetchSearchMovies = async (info: { query: string; page: number }) => {
   const { data } = await axios.get<ISearchJson>(
     `${env.NEXT_PUBLIC_TMDB_BASE_URL}/search/movie?include_adult=false&language=en-US&page=${info.page}&query=${info.query}&api_key=${env.NEXT_PUBLIC_TMDB_API_KEY}`
   );
-  return data.results;
+  return data;
 };
 
 const Movies: NextPage = () => {
@@ -106,11 +111,11 @@ const Movies: NextPage = () => {
   const [movieList, setMovieList] = useState<"discover" | "search">("discover");
 
   const {
-    data: discoverMovies,
-    // isLoading: loadingDiscover,
+    data: discoverData,
+    isLoading: loadingDiscover,
     refetch: refetchDiscover,
   } = useQuery({
-    queryKey: ["discover-movies"],
+    queryKey: ["discover-movies", page],
     queryFn: () =>
       fetchDiscoverMovies({
         page,
@@ -122,17 +127,18 @@ const Movies: NextPage = () => {
   });
 
   const {
-    data: searchMovies,
+    data: searchData,
     // isLoading: loadingSearch,
+    isFetching: fetchingSearch,
     refetch: refetchSearch,
   } = useQuery({
-    queryKey: ["search-movies"],
+    queryKey: ["search-movies", page],
     queryFn: () =>
       fetchSearchMovies({
         query: search,
         page: page,
       }),
-    enabled: false,
+    enabled: movieList === "search",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -147,7 +153,16 @@ const Movies: NextPage = () => {
     }
   };
 
-  const movies = movieList === "discover" ? discoverMovies : searchMovies;
+  const movies =
+    movieList === "discover" ? discoverData?.results : searchData?.results;
+
+  const moviePages =
+    movieList === "discover"
+      ? discoverData?.total_pages
+      : searchData?.total_pages;
+
+  if (loadingDiscover || fetchingSearch) return <LoadingOverlay visible />;
+
   if (!movies) return null;
 
   return (
@@ -248,7 +263,13 @@ const Movies: NextPage = () => {
             />
           </Box>
         </SimpleGrid>
+        <Center mb={rem(30)}>
+          <Pagination value={page} onChange={setPage} total={moviePages ?? 0} />
+        </Center>
         <MovieList movies={movies} />
+        <Center mt={rem(30)}>
+          <Pagination value={page} onChange={setPage} total={moviePages ?? 0} />
+        </Center>
       </Container>
     </main>
   );

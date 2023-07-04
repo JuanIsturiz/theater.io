@@ -12,4 +12,9 @@ export const movieRouter = createTRPCRouter({
       },
     });
   }),
+  getForCarousel: publicProcedure.query(({ ctx }) => {
+    return ctx.prisma.movie.findMany({
+      take: 3,
+    });
+  }),
 });

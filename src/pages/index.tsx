@@ -14,6 +14,8 @@ const fetchMovies = async (limit: number) => {
   return data.results.slice(0, limit);
 };
 
+//todo add carousel movies and reserve now functionality
+
 const Home: NextPage = () => {
   const { data: movies, isLoading } = useQuery<Result[]>({
     queryKey: ["movies"],
