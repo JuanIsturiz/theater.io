@@ -211,7 +211,7 @@ export const getServerSideProps = async (
   });
   const user = await clerkClient.users.getUser(ticket?.userId ?? "");
   const userString = JSON.stringify(user);
-  const parsedUser: User = JSON.parse(userString);
+  const parsedUser: User = JSON.parse(userString) as User;
   return {
     props: {
       id,
