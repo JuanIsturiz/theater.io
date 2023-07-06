@@ -54,7 +54,7 @@ const Reserve: NextPage = () => {
   const router = useRouter();
   useEffect(() => {
     if (user.isLoaded && !user.user) {
-      router.replace("/");
+      void router.replace("/");
     }
   }, [user.isLoaded, user.user, router]);
 

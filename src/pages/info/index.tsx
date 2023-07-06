@@ -20,7 +20,7 @@ import {
 import { useLoadScript, GoogleMap, MarkerF } from "@react-google-maps/api";
 import { IconX } from "@tabler/icons-react";
 import type { NextPage } from "next";
-import React, { ReactNode, useMemo, useState } from "react";
+import React, { type ReactNode, useMemo, useState } from "react";
 import { env } from "~/env.mjs";
 import styles from "~/styles/info.module.css";
 import { type RouterOutputs, api } from "~/utils/api";
@@ -149,9 +149,9 @@ const Info: NextPage = () => {
         <Title order={2} weight={"normal"} mb={rem(10)}>
           Reviews
         </Title>
-        <NewCommentWizard user={user.user} />
+        {user.isLoaded && user.user && <NewCommentWizard user={user.user} />}
         {comments && <Divider my={rem(20)} w={"90%"} mx={"auto"} />}
-        <CommentList comments={comments} />
+        <CommentList comments={comments} user={user.user} />
       </Box>
     </main>
   );
@@ -231,9 +231,10 @@ const NewCommentWizard: React.FC<{ user: UserResource | null | undefined }> = ({
   );
 };
 
-const CommentList: React.FC<{ comments: Comment[] | undefined }> = ({
-  comments,
-}) => {
+const CommentList: React.FC<{
+  comments: Comment[] | undefined;
+  user: UserResource | null | undefined;
+}> = ({ comments, user }) => {
   if (!comments) return null;
 
   const ctx = api.useContext();
@@ -256,12 +257,14 @@ const CommentList: React.FC<{ comments: Comment[] | undefined }> = ({
                 <Text opacity={0.7}>{comment.createdAt.toDateString()}</Text>
               </Text>
             </Group>
-            <ActionIcon
-              onClick={() => removeCommentMutation({ commentId: comment.id })}
-              disabled={isLoading}
-            >
-              <IconX opacity={0.7} />
-            </ActionIcon>
+            {user?.id === comment.userId && (
+              <ActionIcon
+                onClick={() => removeCommentMutation({ commentId: comment.id })}
+                disabled={isLoading}
+              >
+                <IconX opacity={0.7} />
+              </ActionIcon>
+            )}
           </Group>
           <Text mb={rem(2.5)} size={"lg"}>
             {comment.content}

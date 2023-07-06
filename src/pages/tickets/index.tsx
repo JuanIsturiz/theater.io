@@ -24,7 +24,7 @@ import TicketPDF from "~/componens/TicketPDF";
 import { type RouterOutputs, api } from "~/utils/api";
 import QRCode from "qrcode";
 import { getURL } from "~/lib/helpers";
-import { useState, useEffect, Fragment } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import type { IMovie } from "~/types";
 import { env } from "~/env.mjs";
@@ -40,7 +40,7 @@ const Tickets: NextPage = () => {
 
   useEffect(() => {
     if (user.isLoaded && !user.user) {
-      router.replace("/");
+      void router.replace("/");
     }
   }, [user.isLoaded, user.user, router]);
 

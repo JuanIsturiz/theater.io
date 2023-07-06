@@ -54,7 +54,7 @@ const TicketPage: NextPage<{ id: string; user: User | null | undefined }> = ({
       {
         async onSuccess(data) {
           const srcString = await QRCode.toDataURL(
-            `${getURL()}/ticket/${data?.id}`
+            `${getURL()}/ticket/${data?.id ?? ""}`
           );
           setSrc(srcString);
         },
@@ -86,7 +86,7 @@ const TicketPage: NextPage<{ id: string; user: User | null | undefined }> = ({
       >
         <Card.Section>
           <Image
-            src={tmdbImagePath + movieDetais?.backdrop_path}
+            src={`${tmdbImagePath}${movieDetais?.backdrop_path ?? ""}`}
             height={160}
             alt="Movie Image"
           />
@@ -210,7 +210,7 @@ export const getServerSideProps = async (
     },
   });
   const user = await clerkClient.users.getUser(ticket?.userId ?? "");
-  const parsedUser = JSON.parse(JSON.stringify(user));
+  const parsedUser: User = JSON.parse(JSON.stringify(user));
   return {
     props: {
       id,
