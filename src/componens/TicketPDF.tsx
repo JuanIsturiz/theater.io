@@ -1,4 +1,3 @@
-import type { UserResource } from "@clerk/types";
 import {
   Document,
   Page,
@@ -15,7 +14,7 @@ type Ticket = RouterOutputs["ticket"]["getByUserId"][number];
 interface TicketPDFProps {
   ticket: Ticket | null;
   QRSource: string;
-  user: UserResource | null | undefined;
+  username: string | undefined;
   movie: IMovie;
 }
 
@@ -42,7 +41,7 @@ const styles = StyleSheet.create({
   grayLineThin: {
     height: 1,
     width: "80%",
-    marginVertical: 6,
+    marginVertical: 4,
     marginHorizontal: "auto",
     backgroundColor: "#888",
   },
@@ -71,7 +70,7 @@ const getBundlePrice = (bundle: "BASIC" | "PREMIUM" | "VIP" | null) => {
 const TicketPDF: React.FC<TicketPDFProps> = ({
   ticket,
   QRSource,
-  user,
+  username,
   movie,
 }) => {
   const tmdbImagePath = "https://image.tmdb.org/t/p/original";
@@ -91,7 +90,7 @@ const TicketPDF: React.FC<TicketPDFProps> = ({
         <View style={[styles.blueLineFat, { marginBottom: 8 }]}></View>
         <View style={{ textAlign: "center" }}>
           <Text style={{ color: mantineBlue, fontSize: 24, marginBottom: 2 }}>
-            Hello, {user?.firstName} {user?.lastName}
+            Hello, {username}
           </Text>
           <Text style={{ fontSize: 16, marginBottom: 24 }}>
             Thank you for choosing theater.io
@@ -131,7 +130,7 @@ const TicketPDF: React.FC<TicketPDFProps> = ({
           </View>
         </View>
         <View style={styles.grayLineThin}></View>
-        <Text style={{ fontSize: 26, textAlign: "center" }}>{movie.title}</Text>
+        <Text style={{ fontSize: 22, textAlign: "center" }}>{movie.title}</Text>
         <Text
           style={{
             fontSize: 16,
@@ -189,9 +188,7 @@ const TicketPDF: React.FC<TicketPDFProps> = ({
                 .map((seat) => `${seat.row}${seat.column}`)
                 .join(", ")}
             </Text>
-            <Text>
-              {user?.firstName} {user?.lastName}
-            </Text>
+            <Text>{username}</Text>
           </View>
         </View>
         <View style={styles.grayLineThin}></View>

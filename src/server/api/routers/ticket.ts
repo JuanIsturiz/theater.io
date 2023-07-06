@@ -3,6 +3,24 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const ticketRouter = createTRPCRouter({
+  getById: publicProcedure
+    .input(
+      z.object({
+        ticketId: z.string(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      return ctx.prisma.ticket.findUnique({
+        where: {
+          id: input.ticketId,
+        },
+        include: {
+          movie: true,
+          seats: true,
+          room: true,
+        },
+      });
+    }),
   getByUserId: publicProcedure
     .input(
       z.object({

@@ -69,6 +69,15 @@ model Ticket {
     roomId    String
 }
 
+model Comment {
+    id        String   @id @default(cuid())
+    content   String
+    rating    Float
+    userId    String
+    username  String
+    createdAt DateTime @default(now())
+}
+
 enum Bundle {
     BASIC
     VIP

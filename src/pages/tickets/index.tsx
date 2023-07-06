@@ -9,6 +9,7 @@ import {
   Group,
   Loader,
   LoadingOverlay,
+  MediaQuery,
   Modal,
   Table,
   Text,
@@ -23,12 +24,13 @@ import TicketPDF from "~/componens/TicketPDF";
 import { type RouterOutputs, api } from "~/utils/api";
 import QRCode from "qrcode";
 import { getURL } from "~/lib/helpers";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import axios from "axios";
 import type { IMovie } from "~/types";
 import { env } from "~/env.mjs";
 import { useQuery } from "@tanstack/react-query";
 import { useDisclosure } from "@mantine/hooks";
+import Link from "next/link";
 
 type Ticket = RouterOutputs["ticket"]["getByUserId"][number];
 
@@ -40,7 +42,7 @@ const Tickets: NextPage = () => {
     if (user.isLoaded && !user.user) {
       router.replace("/");
     }
-  }, []);
+  }, [user.isLoaded, user.user, router]);
 
   const { data: tickets, isLoading } = api.ticket.getByUserId.useQuery(
     { userId: user.user?.id ?? "" },
@@ -89,10 +91,18 @@ const TicketTable: React.FC<{
           <th>Ticket ID</th>
           <th>Movie</th>
           <th>Date</th>
-          <th>Showtime</th>
-          <th>Seats</th>
-          <th>Bundle</th>
-          <th>Created At</th>
+          <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+            <th>Showtime</th>
+          </MediaQuery>
+          <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+            <th>Seats</th>
+          </MediaQuery>
+          <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+            <th>Bundle</th>
+          </MediaQuery>
+          <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+            <th>Created At</th>
+          </MediaQuery>
           <th></th>
           <th></th>
         </tr>
@@ -126,6 +136,7 @@ const TicketRow: React.FC<{
   const [opened, { open, close }] = useDisclosure(false);
 
   useEffect(() => {
+    if (!ticket) return;
     const setQRString = async () => {
       const srcString = await QRCode.toDataURL(
         `${getURL()}/ticket/${ticket.id}`
@@ -185,17 +196,38 @@ const TicketRow: React.FC<{
           </Button>
         </Group>
       </Modal>
-      <td>{ticket.id}</td>
+      <td>
+        <Link href={`tickets/${ticket.id}`}>
+          <Text
+            sx={{
+              ":hover": {
+                cursor: "pointer",
+                textDecoration: "underline",
+              },
+            }}
+          >
+            {ticket.id}
+          </Text>
+        </Link>
+      </td>
       <td>{ticket.movie.name}</td>
       <td>{ticket.date.toLocaleDateString()}</td>
-      <td>{ticket.showtime.toUpperCase()}</td>
-      <td>
-        {ticket.seats
-          .map((s) => `${s.row}${s.column}`.toUpperCase())
-          .join(" - ")}
-      </td>
-      <td>{ticket.bundle}</td>
-      <td>{ticket.createdAt.toLocaleDateString()}</td>
+      <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+        <td>{ticket.showtime.toUpperCase()}</td>
+      </MediaQuery>
+      <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+        <td>
+          {ticket.seats
+            .map((s) => `${s.row}${s.column}`.toUpperCase())
+            .join(" - ")}
+        </td>
+      </MediaQuery>
+      <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+        <td>{ticket.bundle ? ticket.bundle : "NO BUNDLE"}</td>
+      </MediaQuery>
+      <MediaQuery smallerThan={"md"} styles={{ display: "none" }}>
+        <td>{ticket.createdAt.toLocaleDateString()}</td>
+      </MediaQuery>
       <td>
         {movie && (
           <PDFDownloadLink
@@ -203,7 +235,7 @@ const TicketRow: React.FC<{
               <TicketPDF
                 ticket={ticket}
                 QRSource={src}
-                user={user}
+                username={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`}
                 movie={movie}
               />
             }

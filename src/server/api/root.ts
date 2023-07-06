@@ -5,6 +5,7 @@ import { screenRouter } from "./routers/screen";
 import { seatRouter } from "./routers/seat";
 import { paymentRouter } from "./routers/payment";
 import { ticketRouter } from "./routers/ticket";
+import { commentRouter } from "./routers/comment";
 
 /**
  * This is the primary router for your server.
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
   seat: seatRouter,
   ticket: ticketRouter,
   payment: paymentRouter,
+  comment: commentRouter,
 });
 
 // export type definition of API

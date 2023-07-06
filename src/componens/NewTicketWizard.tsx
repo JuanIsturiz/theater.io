@@ -167,8 +167,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
   const nextDisabled = handleNextDisabled();
 
   const handlePayment = () => {
-    if (!datetime || !showtime || !seatQuantity || !selectedSeats || !bundle)
-      return;
+    if (!datetime || !showtime || !seatQuantity || !selectedSeats) return;
     checkoutMutation({
       quantity: Number(seatQuantity),
       ticket: {

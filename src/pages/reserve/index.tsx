@@ -56,7 +56,7 @@ const Reserve: NextPage = () => {
     if (user.isLoaded && !user.user) {
       router.replace("/");
     }
-  }, []);
+  }, [user.isLoaded, user.user, router]);
 
   const tmdbImagePath = "https://image.tmdb.org/t/p/original";
 
