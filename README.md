@@ -1,10 +1,78 @@
 # theater.io
 
-Hello again!! Welcome to my prototype of a theater application.
+Hello again!! Welcome to my prototype of a movie theater application.
 
 ---
 
 Thank you for joining me in my coding journey!!
+
+### Description
+
+A web application for a movie theater where customers can reserve and pay for their tickets, discover new movies and find more information. `theater.io` was made with the t3 stack, clerk, stripe, supabase and mantineUI.
+
+### Setup
+
+1. Run `npm install` so every dependency in the package.json file installs correctly.
+2. Create a .env file and pass the correct information for every key (use sample.env as an example).
+3. Run `npm run dev` to start the application on a local server.
+
+### Dependencies
+
+- @clerk/nextjs
+- @clerk/themes
+- @emotion/react
+- @emotion/server
+- @mantine/carousel
+- @mantine/core
+- @mantine/dates
+- @mantine/hooks
+- @mantine/next
+- @prisma/client
+- @react-google-maps/api
+- @react-pdf/renderer
+- @stripe/stripe-js
+- @t3-oss/env-nextjs
+- @tabler/icons-react
+- @tanstack/react-query
+- @trpc/client
+- @trpc/next
+- @trpc/react-query
+- @trpc/server
+- axios
+- embla-carousel-react
+- framer-motion
+- micro-cors
+- next
+- nprogress
+- qrcode
+- react
+- react-dom
+- stripe
+- superjson
+- zod
+
+### devDependencies
+
+- @types/eslint
+- @types/micro-cors
+- @types/node
+- @types/nprogress
+- @types/qrcode
+- @types/react
+- @types/react-dom
+- @typescript-eslint/eslint-plugin
+- @typescript-eslint/parser
+- eslint
+- eslint-config-next
+- prisma
+- ts-node
+- typescript
+
+---
+
+### Preview
+
+Click here for a live preview of [theater.io](https://theater-io.vercel.app/) deployed at Vercel.
 
 # Create T3 App
 

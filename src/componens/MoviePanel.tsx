@@ -37,8 +37,14 @@ const MoviePanel: React.FC<MoviePanelProps> = ({ movie }) => {
           justifyContent: "center",
           flexGrow: 1,
           overflow: "hidden",
-          border: "solid 4px #AAA",
-          borderColor: boxHover || flexHover ? theme.colors.blue : "#AAA",
+          borderWidth: 4,
+          borderStyle: "solid",
+          borderColor:
+            boxHover || flexHover
+              ? theme.colors.blue
+              : theme.colorScheme === "dark"
+              ? theme.colors.dark[5]
+              : theme.colors.gray[2],
           borderRadius: "5px",
           transition: "all 300ms ease-in-out",
           cursor: "pointer",

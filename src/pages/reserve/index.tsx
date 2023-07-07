@@ -1,5 +1,6 @@
 import axios from "axios";
 import {
+  Badge,
   Box,
   Button,
   Flex,
@@ -126,45 +127,46 @@ const Reserve: NextPage = () => {
                 </MediaQuery>
                 <Box>
                   <Flex align={"center"} gap={"xs"} mb={"xs"}>
-                    <Title
-                      size={"1.5rem"}
-                      weight={"normal"}
+                    <Text
+                      display={"inline"}
                       sx={{
-                        cursor: "pointer",
-                        ":hover": {
-                          textDecoration: "underline",
-                        },
-                        "@media (max-width: 40em)": {
-                          fontSize: "1.25rem",
-                        },
-                      }}
-                      onClick={() => {
-                        setSelectedMovie({
-                          title: m.title,
-                          id: m.dbId,
-                          screens: m.screens,
-                        });
-                        disclosure[1].open();
+                        verticalAlign: "baseline",
                       }}
                     >
-                      {m.title}{" "}
-                      <Text
+                      <Title
                         display={"inline"}
-                        tt={"uppercase"}
-                        px={".75rem"}
-                        sx={(theme) => ({
-                          fontSize: "1rem",
-                          color: theme.colors.blue[6],
-                          border: `1px solid ${theme.colors.blue[6]}`,
-                          borderRadius: "5px",
-                          "@media (max-width: 40em)": {
-                            fontSize: "1rem",
+                        size={"1.5rem"}
+                        weight={"normal"}
+                        sx={{
+                          cursor: "pointer",
+                          ":hover": {
+                            textDecoration: "underline",
                           },
-                        })}
+                          "@media (max-width: 40em)": {
+                            fontSize: "1.25rem",
+                          },
+                        }}
+                        onClick={() => {
+                          setSelectedMovie({
+                            title: m.title,
+                            id: m.dbId,
+                            screens: m.screens,
+                          });
+                          disclosure[1].open();
+                        }}
+                      >
+                        {m.title}
+                      </Title>{" "}
+                      <Badge
+                        variant="filled"
+                        size="md"
+                        sx={{
+                          verticalAlign: "text-top",
+                        }}
                       >
                         {m.original_language}
-                      </Text>
-                    </Title>
+                      </Badge>
+                    </Text>
                     <MediaQuery smallerThan={"sm"} styles={{ display: "none" }}>
                       <>{m.adult && <Text color="red">Adult</Text>}</>
                     </MediaQuery>

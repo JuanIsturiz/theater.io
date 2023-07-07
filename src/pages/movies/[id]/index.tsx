@@ -1,5 +1,16 @@
 import axios from "axios";
-import { Box, Flex, Image, SimpleGrid, Text, Title, rem } from "@mantine/core";
+import {
+  Box,
+  Flex,
+  Image,
+  MediaQuery,
+  Rating,
+  SimpleGrid,
+  Spoiler,
+  Text,
+  Title,
+  rem,
+} from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import type { GetServerSidePropsContext, NextPage } from "next";
 import { env } from "~/env.mjs";
@@ -59,29 +70,34 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
             pos={"relative"}
             sx={{
               zIndex: 10,
+              "@media (max-width: 40em)": {
+                flexDirection: "column",
+              },
             }}
             gap={"xl"}
           >
-            <Box
-              h={rem(386)}
-              w={rem(246)}
-              sx={(theme) => ({
-                borderStyle: "solid",
-                borderWidth: "3px",
-                borderRadius: rem(3),
-                borderColor:
-                  theme.colorScheme === "dark"
-                    ? theme.colors.dark
-                    : theme.colors.gray[6],
-              })}
-            >
-              <Image
-                height={rem(380)}
-                width={rem(240)}
-                src={tmdbImagePath + movie.poster_path}
-                alt={movie.title || "Movie Poster"}
-              />
-            </Box>
+            <MediaQuery smallerThan={"sm"} styles={{ display: "none" }}>
+              <Box
+                h={rem(386)}
+                w={rem(246)}
+                sx={(theme) => ({
+                  borderStyle: "solid",
+                  borderWidth: "3px",
+                  borderRadius: rem(3),
+                  borderColor:
+                    theme.colorScheme === "dark"
+                      ? theme.colors.dark
+                      : theme.colors.gray[6],
+                })}
+              >
+                <Image
+                  height={rem(380)}
+                  width={rem(240)}
+                  src={tmdbImagePath + movie.poster_path}
+                  alt={movie.title || "Movie Poster"}
+                />
+              </Box>
+            </MediaQuery>
             <Box>
               <Title
                 color="white"
@@ -100,65 +116,83 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
               <Text size={"xl"} color="white">
                 {toHoursAndMinutes(movie.runtime)}
               </Text>
-              <RatingStars voteAverage={movie.vote_average} />
+              <Rating
+                mt={rem(5)}
+                size="lg"
+                value={Math.round(movie.vote_average / 2)}
+                fractions={2}
+                readOnly
+              />
               <Text size={"lg"} fs={"italic"} color="gray.4" my={rem(20)}>
                 {movie.tagline}
               </Text>
               <Text size={"xl"} weight={500} color="white">
                 Overview
               </Text>
-              <Text size={"lg"} color="white">
-                {movie.overview}
+              <Text
+                size={"lg"}
+                color="white"
+                sx={{
+                  "@media (max-width: 30em)": {
+                    fontSize: "1rem",
+                  },
+                }}
+              >
+                <Spoiler maxHeight={144} showLabel="Show more" hideLabel="Hide">
+                  {movie.overview}
+                </Spoiler>
               </Text>
             </Box>
           </Flex>
         </Box>
         <Box py={rem(10)} bg={"blue"} sx={{ color: "#000" }}>
-          <SimpleGrid cols={4}>
-            <Box sx={{ textAlign: "center" }}>
-              <Text weight={"bold"}>Status</Text>
-              <Text weight={500}>{movie.status}</Text>
-            </Box>
-            <Box sx={{ textAlign: "center" }}>
-              <Text weight={"bold"}>Original Language</Text>
-              <Text weight={500}>{movie.original_language.toUpperCase()}</Text>
-            </Box>
-            <Box sx={{ textAlign: "center" }}>
-              <Text weight={"bold"}>Budget</Text>
-              <Text weight={500}>${movie.budget.toLocaleString()}</Text>
-            </Box>
-            <Box sx={{ textAlign: "center" }}>
-              <Text weight={"bold"}>Revenue</Text>
-              <Text weight={500}>${movie.revenue.toLocaleString()}</Text>
-            </Box>
-          </SimpleGrid>
+          <MediaQuery smallerThan={"sm"} styles={{ display: "none" }}>
+            <SimpleGrid cols={4}>
+              <Box sx={{ textAlign: "center" }}>
+                <Text weight={"bold"}>Status</Text>
+                <Text weight={500}>{movie.status}</Text>
+              </Box>
+              <Box sx={{ textAlign: "center" }}>
+                <Text weight={"bold"}>Original Language</Text>
+                <Text weight={500}>
+                  {movie.original_language.toUpperCase()}
+                </Text>
+              </Box>
+              <Box sx={{ textAlign: "center" }}>
+                <Text weight={"bold"}>Budget</Text>
+                <Text weight={500}>${movie.budget.toLocaleString()}</Text>
+              </Box>
+              <Box sx={{ textAlign: "center" }}>
+                <Text weight={"bold"}>Revenue</Text>
+                <Text weight={500}>${movie.revenue.toLocaleString()}</Text>
+              </Box>
+            </SimpleGrid>
+          </MediaQuery>
+          <MediaQuery largerThan={"sm"} styles={{ display: "none" }}>
+            <SimpleGrid cols={2}>
+              <Box sx={{ textAlign: "center" }}>
+                <Text weight={"bold"}>Status</Text>
+                <Text weight={500}>{movie.status}</Text>
+              </Box>
+              <Box sx={{ textAlign: "center" }}>
+                <Text weight={"bold"}>Original Language</Text>
+                <Text weight={500}>
+                  {movie.original_language.toUpperCase()}
+                </Text>
+              </Box>
+              <Box sx={{ textAlign: "center" }}>
+                <Text weight={"bold"}>Budget</Text>
+                <Text weight={500}>${movie.budget.toLocaleString()}</Text>
+              </Box>
+              <Box sx={{ textAlign: "center" }}>
+                <Text weight={"bold"}>Revenue</Text>
+                <Text weight={500}>${movie.revenue.toLocaleString()}</Text>
+              </Box>
+            </SimpleGrid>
+          </MediaQuery>
         </Box>
       </Box>
     </main>
-  );
-};
-
-const RatingStars: React.FC<{ voteAverage: number }> = ({ voteAverage }) => {
-  const roundedVoteAverage = Math.round(voteAverage / 2);
-  const ratingArray = new Array(5)
-    .fill(false)
-    .map((_, idx) => (idx + 1 <= roundedVoteAverage ? true : false));
-  return (
-    <Box>
-      {ratingArray.map((rating, idx) =>
-        rating ? (
-          <IconStarFilled
-            key={idx}
-            size={rem(30)}
-            style={{
-              color: "#1C7ED6",
-            }}
-          />
-        ) : (
-          <IconStar key={idx} size={rem(30)} color="#1C7ED6" />
-        )
-      )}
-    </Box>
   );
 };
 

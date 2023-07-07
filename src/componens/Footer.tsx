@@ -24,7 +24,7 @@ const Footer: React.FC<FooterProps> = ({ theme }) => {
       mt={"3rem"}
       py={".5rem"}
       px={"1rem"}
-      bg={theme === "dark" ? "dark" : "blue"}
+      bg={theme === "dark" ? "dark" : "gray.2"}
     >
       <SimpleGrid
         cols={3}
@@ -54,7 +54,7 @@ const Footer: React.FC<FooterProps> = ({ theme }) => {
               },
             }}
           >
-            <Link href={"/"}>About Us</Link>
+            <Link href={"/info"}>About Us</Link>
           </Text>
           <Text
             sx={{
@@ -63,7 +63,7 @@ const Footer: React.FC<FooterProps> = ({ theme }) => {
               },
             }}
           >
-            <Link href={"/"}>Location</Link>
+            <Link href={"/info"}>Location</Link>
           </Text>
           <Text
             sx={{
@@ -72,19 +72,28 @@ const Footer: React.FC<FooterProps> = ({ theme }) => {
               },
             }}
           >
-            <Link href={"/"}>Schedules</Link>
+            <Link href={"/info"}>Schedules</Link>
           </Text>
         </Box>
         <Box>
           <Title mb={".25rem"}>Socials</Title>
           <Group>
-            <ActionIcon size={"lg"}>
+            <ActionIcon
+              size={"lg"}
+              color={theme === "dark" ? "gray.5" : "gray.8"}
+            >
               <IconBrandInstagram size="3rem" />
             </ActionIcon>
-            <ActionIcon size={"lg"}>
+            <ActionIcon
+              size={"lg"}
+              color={theme === "dark" ? "gray.5" : "gray.8"}
+            >
               <IconBrandTwitter size="3rem" />
             </ActionIcon>
-            <ActionIcon size={"lg"}>
+            <ActionIcon
+              size={"lg"}
+              color={theme === "dark" ? "gray.5" : "gray.8"}
+            >
               <IconBrandYoutube size="3rem" />
             </ActionIcon>
           </Group>

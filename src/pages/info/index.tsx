@@ -203,7 +203,7 @@ const NewCommentWizard: React.FC<{ user: UserResource | null | undefined }> = ({
   };
 
   return (
-    <Card>
+    <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Textarea
         placeholder="I love theater.io!"
         label="Comment Your Experience"
@@ -248,7 +248,7 @@ const CommentList: React.FC<{
   return (
     <Stack>
       {comments.map((comment) => (
-        <Card key={comment.id}>
+        <Card key={comment.id} shadow="sm" padding="lg" radius="md" withBorder>
           <Group position="apart">
             <Group spacing={"xs"}>
               <Text>@{comment.username}</Text>
@@ -269,7 +269,7 @@ const CommentList: React.FC<{
           <Text mb={rem(2.5)} size={"lg"}>
             {comment.content}
           </Text>
-          <Rating defaultValue={comment.rating} fractions={2} readOnly />
+          <Rating value={comment.rating} fractions={2} readOnly />
         </Card>
       ))}
     </Stack>
