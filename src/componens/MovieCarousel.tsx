@@ -1,5 +1,5 @@
 import { Carousel } from "@mantine/carousel";
-import { Box, Button, Group, Text, Title } from "@mantine/core";
+import { Box, Button, Group, Spoiler, Text, Title } from "@mantine/core";
 import type { IMovie } from "~/types";
 import styles from "~/styles/movies.module.css";
 import Link from "next/link";
@@ -12,7 +12,15 @@ interface MovieCarouselProps {
 const MovieCarousel: React.FC<MovieCarouselProps> = ({ movies }) => {
   if (!movies) return null;
   return (
-    <Carousel withIndicators height={400}>
+    <Carousel
+      withIndicators
+      sx={{
+        height: 400,
+        "@media (max-width: 30em)": {
+          height: 500,
+        },
+      }}
+    >
       <Carousel.Slide>
         <MovieSlide movie={movies[0]} />
       </Carousel.Slide>
@@ -37,7 +45,11 @@ const MovieSlide: React.FC<{
       px={"2.75rem"}
       py={".5rem"}
       sx={{
+        height: 400,
         backgroundImage: `url(${tmdbImagePath}${movie?.backdrop_path ?? ""})`,
+        "@media (max-width: 30em)": {
+          height: 500,
+        },
       }}
     >
       <Title
@@ -59,9 +71,14 @@ const MovieSlide: React.FC<{
           color="white"
           sx={{
             zIndex: 10,
+            "@media (max-width: 30em)": {
+              fontSize: ".9rem",
+            },
           }}
         >
-          {movie?.overview}
+          <Spoiler maxHeight={154} showLabel="Show more" hideLabel="Hide">
+            {movie?.overview}
+          </Spoiler>
         </Text>
         <Group className={styles.movieSliceButtons}>
           <SignedOut>

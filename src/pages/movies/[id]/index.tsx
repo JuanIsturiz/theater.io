@@ -138,7 +138,7 @@ const MoviePage: NextPage<{ id: string }> = ({ id }) => {
                   },
                 }}
               >
-                <Spoiler maxHeight={144} showLabel="Show more" hideLabel="Hide">
+                <Spoiler maxHeight={130} showLabel="Show more" hideLabel="Hide">
                   {movie.overview}
                 </Spoiler>
               </Text>
