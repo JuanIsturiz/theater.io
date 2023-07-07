@@ -108,9 +108,12 @@ const SuccessPage: NextPage = () => {
                   <TicketPDF
                     ticket={pdfTicket}
                     QRSource={src}
-                    username={`${user.user?.firstName ?? ""} ${
-                      user.user?.lastName ?? ""
-                    }`}
+                    username={
+                      user.user?.username ||
+                      `${user.user?.firstName ?? ""} ${
+                        user.user?.lastName ?? ""
+                      }`
+                    }
                     movie={movie}
                   />
                 }

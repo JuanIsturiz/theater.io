@@ -6,6 +6,7 @@ import {
   Group,
   Image,
   LoadingOverlay,
+  MediaQuery,
   Text,
   Title,
   rem,
@@ -116,11 +117,13 @@ const Reserve: NextPage = () => {
           >
             <Box>
               <Flex gap={"sm"} align={"center"}>
-                <Image
-                  width={rem(50)}
-                  src={tmdbImagePath + m.poster_path}
-                  alt={m.title ?? ""}
-                />
+                <MediaQuery smallerThan={"sm"} styles={{ display: "none" }}>
+                  <Image
+                    width={rem(50)}
+                    src={tmdbImagePath + m.poster_path}
+                    alt={m.title ?? ""}
+                  />
+                </MediaQuery>
                 <Box>
                   <Flex align={"center"} gap={"xs"} mb={"xs"}>
                     <Title
@@ -130,6 +133,9 @@ const Reserve: NextPage = () => {
                         cursor: "pointer",
                         ":hover": {
                           textDecoration: "underline",
+                        },
+                        "@media (max-width: 40em)": {
+                          fontSize: "1.25rem",
                         },
                       }}
                       onClick={() => {
@@ -141,20 +147,27 @@ const Reserve: NextPage = () => {
                         disclosure[1].open();
                       }}
                     >
-                      {m.title}
+                      {m.title}{" "}
+                      <Text
+                        display={"inline"}
+                        tt={"uppercase"}
+                        px={".75rem"}
+                        sx={(theme) => ({
+                          fontSize: "1rem",
+                          color: theme.colors.blue[6],
+                          border: `1px solid ${theme.colors.blue[6]}`,
+                          borderRadius: "5px",
+                          "@media (max-width: 40em)": {
+                            fontSize: "1rem",
+                          },
+                        })}
+                      >
+                        {m.original_language}
+                      </Text>
                     </Title>
-                    <Text
-                      tt={"uppercase"}
-                      px={".75rem"}
-                      sx={(theme) => ({
-                        color: theme.colors.blue[6],
-                        border: `1px solid ${theme.colors.blue[6]}`,
-                        borderRadius: "5px",
-                      })}
-                    >
-                      {m.original_language}
-                    </Text>
-                    {m.adult && <Text color="red">Adult</Text>}
+                    <MediaQuery smallerThan={"sm"} styles={{ display: "none" }}>
+                      <>{m.adult && <Text color="red">Adult</Text>}</>
+                    </MediaQuery>
                   </Flex>
                   <Flex align={"center"} gap={"xs"}>
                     <Text>Available Dates:</Text>
@@ -182,10 +195,12 @@ const Reserve: NextPage = () => {
               </Flex>
             </Box>
             <Box>
-              <Flex align={"center"} gap={"xs"}>
-                <Text size={"1.75rem"}>{Math.round(m.vote_average)}/10</Text>
-                <IconStarFilled size={"2rem"} style={{ color: "#FFD43B" }} />
-              </Flex>
+              <MediaQuery smallerThan={"sm"} styles={{ display: "none" }}>
+                <Flex align={"center"} gap={"xs"}>
+                  <Text size={"1.75rem"}>{Math.round(m.vote_average)}/10</Text>
+                  <IconStarFilled size={"2rem"} style={{ color: "#FFD43B" }} />
+                </Flex>
+              </MediaQuery>
             </Box>
           </Box>
         ))}

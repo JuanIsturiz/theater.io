@@ -5,7 +5,7 @@ export const commentRouter = createTRPCRouter({
   getAll: publicProcedure.query(async ({ ctx }) => {
     return ctx.prisma.comment.findMany({
       orderBy: {
-        createdAt: "asc",
+        createdAt: "desc",
       },
     });
   }),

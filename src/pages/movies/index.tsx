@@ -83,7 +83,6 @@ const fetchDiscoverMovies = async (query: IQuery) => {
   });
   queries += "api_key=" + env.NEXT_PUBLIC_TMDB_API_KEY;
   const { data } = await axios.get<IDiscoverJson>(queries);
-  console.log({ data });
 
   return data;
 };

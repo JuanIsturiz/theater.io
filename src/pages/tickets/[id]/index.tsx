@@ -164,7 +164,10 @@ const TicketPage: NextPage<{ id: string; user: User | null | undefined }> = ({
               <TicketPDF
                 ticket={ticket}
                 QRSource={src}
-                username={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`}
+                username={
+                  user?.username ||
+                  `${user?.firstName ?? ""} ${user?.lastName ?? ""}`
+                }
                 movie={movieDetais}
               />
             }

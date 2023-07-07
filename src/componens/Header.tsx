@@ -143,7 +143,12 @@ const Header: React.FC<HeaderProps> = ({ theme, onTheme }) => {
                           radius={"xl"}
                           mr={".5rem"}
                         />
-                        <Text>{user.user.username}</Text>
+                        <Text>
+                          {user.user?.username ||
+                            `${user.user?.firstName ?? ""} ${
+                              user.user?.lastName ?? ""
+                            }`}
+                        </Text>
                       </Button>
                     </Tooltip>
                   </SignOutButton>

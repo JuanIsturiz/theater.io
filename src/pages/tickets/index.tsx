@@ -235,7 +235,10 @@ const TicketRow: React.FC<{
               <TicketPDF
                 ticket={ticket}
                 QRSource={src}
-                username={`${user?.firstName ?? ""} ${user?.lastName ?? ""}`}
+                username={
+                  user?.username ||
+                  `${user?.firstName ?? ""} ${user?.lastName ?? ""}`
+                }
                 movie={movie}
               />
             }

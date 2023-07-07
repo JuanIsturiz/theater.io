@@ -18,3 +18,11 @@ a {
 * {
   transition: color 100ms ease-in-out, background-color 100ms ease-in-out;
 }
+
+#nprogress .peg {
+  box-shadow: 0 0 10px #1C7ED6, 0 0 5px #1C7ED6 !important;
+}
+
+#nprogress .bar {
+  background: #1C7ED6 !important;
+}
