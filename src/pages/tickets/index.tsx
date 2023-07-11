@@ -61,7 +61,7 @@ const Tickets: NextPage = () => {
       <Text align="center" mb={"1rem"} opacity={0.6}>
         User tickets listed below
       </Text>
-      {!tickets?.length && (
+      {!tickets?.length ? (
         <Box sx={{ textAlign: "center" }}>
           <Center mb={".25rem"}>
             <Title weight={"normal"} mr={".25rem"}>
@@ -74,8 +74,10 @@ const Tickets: NextPage = () => {
             <Anchor onClick={() => void router.replace("reserve")}>here</Anchor>
           </Text>
         </Box>
-      )}
-      {tickets?.length && <TicketTable tickets={tickets} user={user.user} />}
+      ) : null}
+      {tickets?.length ? (
+        <TicketTable tickets={tickets} user={user.user} />
+      ) : null}
     </main>
   );
 };

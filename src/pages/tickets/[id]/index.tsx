@@ -54,7 +54,7 @@ const TicketPage: NextPage<{ id: string; user: User | null | undefined }> = ({
       {
         async onSuccess(data) {
           const srcString = await QRCode.toDataURL(
-            `${getURL()}/ticket/${data?.id ?? ""}`
+            `${getURL()}/tickets/${data?.id ?? ""}`
           );
           setSrc(srcString);
         },

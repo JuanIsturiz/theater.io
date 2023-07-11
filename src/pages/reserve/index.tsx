@@ -181,15 +181,24 @@ const Reserve: NextPage = () => {
                           )
                         )
                       ).map((date) => (
-                        <Button
+                        <Badge
                           key={date}
-                          sx={{ cursor: "default" }}
-                          color="gray"
-                          variant="light"
-                          size="xs"
+                          sx={(theme) => ({
+                            backgroundColor:
+                              theme.colorScheme === "dark"
+                                ? theme.colors.dark
+                                : theme.colors.gray[2],
+                            color:
+                              theme.colorScheme !== "dark"
+                                ? theme.colors.dark[4]
+                                : theme.colors.gray[3],
+                            cursor: "default",
+                          })}
+                          size="lg"
+                          radius={"md"}
                         >
                           {date}
-                        </Button>
+                        </Badge>
                       ))}
                     </Group>
                   </Flex>
