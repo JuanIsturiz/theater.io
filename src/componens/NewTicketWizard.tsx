@@ -443,7 +443,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
                   VIP
                 </Text>
                 <Text weight={500} size={"1.5rem"} opacity={0.8}>
-                  $25
+                  $15
                 </Text>
               </Card.Section>
               <Card.Section mb={"1rem"}>

@@ -49,7 +49,7 @@ const SuccessPage: NextPage = () => {
       async onSuccess(data) {
         if (data.status === "verified") {
           const srcString = await QRCode.toDataURL(
-            `${getURL()}/ticket/${data.ticket.id}`
+            `${getURL()}/tickets/${data.ticket.id}`
           );
           setSrc(srcString);
           setMessage("Ticket verified successfully!");

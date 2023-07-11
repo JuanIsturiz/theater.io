@@ -139,7 +139,7 @@ const TicketRow: React.FC<{
     if (!ticket) return;
     const setQRString = async () => {
       const srcString = await QRCode.toDataURL(
-        `${getURL()}/ticket/${ticket.id}`
+        `${getURL()}/tickets/${ticket.id}`
       );
       setSrc(srcString);
     };
