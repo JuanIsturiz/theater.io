@@ -68,14 +68,17 @@ const Reserve: NextPage = () => {
 
   const disclosure = useDisclosure(false);
 
-  const { data: movieIds } = api.movie.getAll.useQuery();
-  const { data: movies, isLoading } = useQuery<ICompleteMovie[] | null>({
-    queryKey: ["movies"],
+  const { data: movieIds, isLoading: loadingIds } = api.movie.getAll.useQuery();
+  const { data: movies, isLoading: loadingMovies } = useQuery<
+    ICompleteMovie[] | null
+  >({
+    queryKey: ["reserve-movies"],
     queryFn: () => fetchMovies(movieIds),
     enabled: !!movieIds,
   });
 
-  if (isLoading) return <LoadingOverlay visible />;
+  if (loadingIds || loadingMovies) return <LoadingOverlay visible />;
+
   return (
     <main
       style={{

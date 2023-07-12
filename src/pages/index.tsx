@@ -34,7 +34,7 @@ const fetchCarouselMovies = async (movies: Movie[] | undefined) => {
 
 const Home: NextPage = () => {
   const { data: movies, isLoading: loadingMovies } = useQuery<Result[]>({
-    queryKey: ["movies"],
+    queryKey: ["homepage-movies"],
     queryFn: () => fetchMovies(12),
   });
 
