@@ -45,9 +45,13 @@ async function seed() {
   for (let i = 0; i < 8; i++) {
     const nextDay = new Date(day);
     nextDay.setDate(day.getDate() + 1);
+    if (nextDay.getDay() === 1) {
+      nextDay.setDate(nextDay.getDate() + 1);
+    }
     dates.push(nextDay.toLocaleDateString());
     day = nextDay;
   }
+
   // insert movies
   await prisma.movie.createMany({
     data: movies.map((movie) => movie),

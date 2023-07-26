@@ -46,16 +46,33 @@ const Info: NextPage = () => {
         <Title order={2} weight={"normal"} mb={rem(10)}>
           About Us
         </Title>
-        <Text>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Deleniti
-          dicta nulla voluptatem repudiandae illum, temporibus excepturi in eos
-          ut molestias sequi impedit reprehenderit ad laboriosam magnam debitis
-          adipisci dignissimos consequatur assumenda facere velit? Maxime,
-          pariatur mollitia voluptatum blanditiis eos fugiat temporibus eius sed
-          ducimus deserunt dolores accusamus eligendi nulla laudantium expedita
-          nesciunt nihil, dolorem at magni autem. Quos neque quidem aperiam
-          ipsum, quo veniam dolores eius quisquam dolor odit atque facilis unde,
-          reiciendis amet perferendis.
+        <Text ta={"justify"} mb={rem(6)}>
+          With a strong commitment to embracing the power of storytelling, our
+          company is driven by a genuine passion for sharing emotions through
+          the art of film. Our core mission is to provide a platform for
+          meaningful and thought-provoking entertainment that goes beyond mere
+          amusement, igniting a collective curiosity and fostering a deeper
+          connection to culture. At the heart of our operations lies an
+          unwavering dedication to staying at the forefront of technological
+          advancements and infrastructure. By utilizing cutting-edge equipment
+          and innovative digital platforms, we aim to create a seamless
+          cinematic experience that captivates our audience's senses and
+          transcends traditional boundaries.
+        </Text>
+        <Text ta={"justify"}>
+          However, our commitment to excellence extends far beyond the technical
+          realm. Our success also stems from the expertly trained and motivated
+          team of individuals comprising our human talent. Each member possesses
+          a deep understanding of the power of storytelling, ensuring that every
+          customer interaction is more than just a transaction—it is a memorable
+          and transformative encounter. We take great pride in not only
+          enriching the lives of our customers but also in generating value for
+          other stakeholders. Through collaborations with local communities,
+          educational institutions, and industry partners, we actively
+          contribute to the cultural, social, and economic growth of the regions
+          we serve. By nurturing these meaningful relationships, we strive to
+          create a ripple effect that leaves an enduring impact on society as a
+          whole.
         </Text>
       </Box>
       <Box mb={rem(30)}>

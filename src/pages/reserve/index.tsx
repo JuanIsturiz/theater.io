@@ -104,6 +104,9 @@ const Reserve: NextPage = () => {
       >
         {movies?.map((m) => (
           <Box
+            opacity={
+              m.screens.every((s) => new Date(s.date) < new Date()) ? 0.7 : 1
+            }
             p={".5rem"}
             key={m.id}
             sx={(theme) => ({
