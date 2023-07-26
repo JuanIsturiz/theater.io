@@ -56,7 +56,7 @@ const Info: NextPage = () => {
           unwavering dedication to staying at the forefront of technological
           advancements and infrastructure. By utilizing cutting-edge equipment
           and innovative digital platforms, we aim to create a seamless
-          cinematic experience that captivates our audience's senses and
+          cinematic experience that captivates our audience&apos;s senses and
           transcends traditional boundaries.
         </Text>
         <Text ta={"justify"}>
