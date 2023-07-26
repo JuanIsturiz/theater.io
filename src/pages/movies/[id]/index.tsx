@@ -15,7 +15,6 @@ import { useQuery } from "@tanstack/react-query";
 import type { GetServerSidePropsContext, NextPage } from "next";
 import { env } from "~/env.mjs";
 import type { IMovie } from "~/types";
-import { IconStar, IconStarFilled } from "@tabler/icons-react";
 
 // hours converter helper
 const toHoursAndMinutes = (totalMinutes: number) => {

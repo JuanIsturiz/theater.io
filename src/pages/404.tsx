@@ -1,6 +1,6 @@
 import { Box, Button, Center, Group, Stack, Title } from "@mantine/core";
 import { IconMoodSad } from "@tabler/icons-react";
-import { NextPage } from "next";
+import type { NextPage } from "next";
 import Link from "next/link";
 
 const Custom404: NextPage = () => {

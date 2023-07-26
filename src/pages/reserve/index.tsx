@@ -2,7 +2,6 @@ import axios from "axios";
 import {
   Badge,
   Box,
-  Button,
   Flex,
   Group,
   Image,
