@@ -179,6 +179,7 @@ const NewTicketWizard: React.FC<NewTicketWizardProps> = ({
         userId,
         roomId: room?.id ?? "",
       },
+      redirectURL: window.location.origin.split("/reserve")[0] as string,
     });
   };
 

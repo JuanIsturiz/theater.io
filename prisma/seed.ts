@@ -19,7 +19,7 @@ function getSeats(screenId: string) {
 }
 
 async function seed() {
-  // initial imdbIds
+  // initial imdbIds https://www.themoviedb.org/
   const movies = [
     { imdbId: "697843", name: "Extraction 2" },
     { imdbId: "298618", name: "The Flash" },

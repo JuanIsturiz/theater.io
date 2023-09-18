@@ -23,6 +23,7 @@ export const paymentRouter = createTRPCRouter({
           movieId: z.string(),
           roomId: z.string(),
         }),
+        redirectURL: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -96,12 +97,8 @@ export const paymentRouter = createTRPCRouter({
         mode: "payment",
         payment_method_types: ["card", "us_bank_account"],
         line_items,
-        success_url: `${getURL()}/payment/success?session_id={CHECKOUT_SESSION_ID}&ticket_id=${
-          ticket.id
-        }`,
-        cancel_url: `${getURL()}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&ticket_id=${
-          ticket.id
-        }`,
+        success_url: `${input.redirectURL}/payment/success?session_id={CHECKOUT_SESSION_ID}&ticket_id=${ticket.id}`,
+        cancel_url: `${input.redirectURL}/payment/cancel?session_id={CHECKOUT_SESSION_ID}&ticket_id=${ticket.id}`,
       });
     }),
   confirmPayment: publicProcedure
